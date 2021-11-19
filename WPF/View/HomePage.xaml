@@ -1,0 +1,68 @@
+﻿<UserControl x:Class="WPF.View.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:WPF.View"
+      TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+      TextElement.FontWeight="Regular"
+      TextElement.FontSize="13"
+      TextOptions.TextFormattingMode="Ideal"
+      TextOptions.TextRenderingMode="Auto"
+      Background="{DynamicResource MaterialDesignPaper}"
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/MaterialDesignColor.Green.Named.Primary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Image 
+                   Width="400"
+                   HorizontalAlignment="Left"
+                   Stretch="UniformToFill"
+                   Source="/Img/logo-login.png" />
+            <StackPanel>
+            <TextBlock Margin="20,0,0,0" Style="{StaticResource MaterialDesignHeadline6TextBlock}">
+                       Name : Hussein Hayder Mohammed Al-Kahfaji <LineBreak />
+                       Student Number : 213720162 <LineBreak />
+                       Class : ECE525 Artificial Intelligence   
+            </TextBlock>
+            <TextBlock Margin="20,10,0,0"
+                       Foreground="{DynamicResource SecondaryHueLightBrush}"
+                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                       Text="Using A* For Pathfinding Algorithm &amp; Visualizing The Process">
+                        
+            </TextBlock>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="1"
+                    Margin="10,10,10,10">
+            <TextBlock Text="Algorithms Used in This Project" 
+                       Style="{ StaticResource MaterialDesignHeadline4TextBlock}" />
+            <TextBlock Text="# A* search algorithm"
+                       Style="{ StaticResource MaterialDesignHeadline5TextBlock}"
+                       Margin="20,0,0,10" />
+            <TextBlock TextWrapping="WrapWithOverflow"
+                       Text="   A star is a graph traversal and path search algorithm, which is often used in many fields of computer science due to its completeness, optimality, and optimal efficiency. One major practical drawback is its space complexity, as it stores all generated nodes in memory. Thus, in practical travel-routing systems, it is generally outperformed by algorithms which can pre-process the graph to attain better performance, as well as memory-bounded approaches; however, A* is still the best solution in many cases."
+                       Style="{ StaticResource MaterialDesignHeadline6TextBlock}"
+                       Margin="40,0,0,20" />
+            <TextBlock Text="# Recursive Division algorithm "
+                       Style="{ StaticResource MaterialDesignHeadline5TextBlock}"
+                       Margin="20,0,0,10" />
+            <TextBlock TextWrapping="WrapWithOverflow"
+                       Text="   Mazes can be created with recursive division, an algorithm which works as follows: Begin with the maze's space with no walls. Call this a chamber. Divide the chamber with a randomly positioned wall (or multiple walls) where each wall contains a randomly positioned passage opening within it. Then recursively repeat the process on the subchambers until all chambers are minimum sized. This method results in mazes with long straight walls crossing their space, making it easier to see which areas to avoid."
+                       Style="{ StaticResource MaterialDesignHeadline6TextBlock}"
+                       Margin="40,0,0,10" />
+        </StackPanel>
+    </Grid>
+</UserControl>

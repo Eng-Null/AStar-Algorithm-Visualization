@@ -1,0 +1,149 @@
+﻿<UserControl x:Class="WPF.View.PathfindingVisualizationPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WPF"
+             xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:viewModel="clr-namespace:WPF.ViewModel"
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="13"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             Background="{DynamicResource MaterialDesignPaper}"
+             FontFamily="{DynamicResource MaterialDesignFont}"
+             d:DataContext="{d:DesignInstance Type=viewModel:AStarAlgorithmViewModel,
+                                     IsDesignTimeCreatable=True}"       
+             mc:Ignorable="d">
+    <!--x:TypeArguments="AStarAlgorithmViewModel"-->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ToolBarTray IsLocked="True">
+            <ToolBar Style="{DynamicResource MaterialDesignToolBar}" >
+                <Button Command="{Binding CalculateCommand}"
+                        Content="{mD:PackIcon Kind=Refresh}" />
+                <Button Command="{Binding StartCommand}"
+                        Content="{mD:PackIcon Kind=Play}" />
+                <Separator />
+                <Button Command="{Binding SetConditionCommand}"
+                        Content="{mD:PackIcon Kind=WeatherSunnyAlert}" />
+                <Button Command="{Binding SetConditionCommand}"
+                        Content="{mD:PackIcon Kind=WeatherSunnyOff}" />
+                <Separator />
+                <Button Command="{Binding AddMazeCommand}"
+                        Content="{mD:PackIcon Kind=PuzzlePlus}" />
+                <Button Command="{Binding AddMazeCommand}"
+                        Content="{mD:PackIcon Kind=PuzzleMinus}" />
+                <Separator />
+                <Button Command="{Binding WallToRoadCommand}"
+                        Content="{mD:PackIcon Kind=Road}" />
+                <Separator />
+                <TextBlock Text="Start Point :" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding StartPoint.X}" 
+                         Width="15" 
+                         HorizontalContentAlignment="Center"/>
+                <TextBox Text="{Binding StartPoint.Y}"
+                         Width="15"
+                         HorizontalContentAlignment="Center" />
+                <Separator />
+                <TextBlock Text="End Point :"
+                           VerticalAlignment="Center" />
+                <TextBox Text="{Binding EndPoint.X}"
+                         Width="15"
+                         HorizontalContentAlignment="Center" />
+                <TextBox Text="{Binding EndPoint.Y}"
+                         Width="15"
+                         HorizontalContentAlignment="Center" />
+                <Separator />
+                
+                <Separator />
+                <TextBlock Text="Use Maze :"
+                           VerticalAlignment="Center" />
+                <ToggleButton IsChecked="{Binding IsMazeEnabled}" />
+                <TextBlock Text="Use Diagonal :"
+                           VerticalAlignment="Center" />
+                <ToggleButton IsChecked="{Binding IsDiagonalEnabled}" />
+
+            </ToolBar>
+            <ToolBar Band="1">
+                <TextBlock Text="Noise Level :"
+                           VerticalAlignment="Center" />
+                <Slider VerticalAlignment="Center"
+                        Width="400"
+                        Value="{Binding Noise}"
+                        Minimum="0"
+                        Maximum="100"
+                        Style="{StaticResource MaterialDesignDiscreteSlider}"
+                        TickFrequency="1"
+                        TickPlacement="BottomRight"
+                        SelectionStart="0"
+                        SelectionEnd="30"
+                        IsSelectionRangeEnabled="True" />
+                <Separator />
+                <TextBlock Text="Delay :"
+                           VerticalAlignment="Center" />
+                <Slider VerticalAlignment="Center"
+                        Width="600"
+                        Value="{Binding Delay}"
+                        Minimum="0"
+                        Maximum="500"
+                        Style="{StaticResource MaterialDesignDiscreteSlider}"
+                        TickFrequency="1"
+                        TickPlacement="BottomRight"
+                        SelectionStart="0"
+                        SelectionEnd="100"
+                        IsSelectionRangeEnabled="True" />
+            </ToolBar>
+        </ToolBarTray>
+
+        <ItemsControl ItemsSource="{Binding Nodes}"
+                      Margin="10"
+                      Grid.Row="1">
+            <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                    <Canvas>
+
+                    </Canvas>
+                </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Left"
+                                Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                        <Setter Property="Canvas.Top"
+                                Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                    <Grid>
+                        <Rectangle Width="20"
+                                   Height="20"
+                                   mD:ButtonAssist.CornerRadius="0"
+                                   Stroke="{StaticResource PrimaryHueLightBrush}"
+                                   StrokeThickness="0"
+                                   ToolTip="{Binding ToolTip}"
+                                   Fill="{Binding Set, Converter={local:AStarSetToColorValueConverter}}" />
+
+                        <mD:PackIcon Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
+                                     Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
+                                     Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}"
+                                     ToolTip="{Binding ToolTip}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        <DataGrid Grid.Row="1"
+                  Margin="1240,10,10,10"
+                  ItemsSource="{Binding PathScore}">
+            
+        </DataGrid>
+            
+    </Grid>
+</UserControl>
