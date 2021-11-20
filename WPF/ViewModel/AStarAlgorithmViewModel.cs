@@ -4,7 +4,8 @@
 
 public class AStarAlgorithmViewModel : BaseViewModel
 {
-    #region Algorithem Constants 
+    #region Algorithem Constants
+
     public int X { get; set; } = 61;
     public int Y { get; set; } = 31;
     public Node[,] NodeMap { get; set; }
@@ -15,44 +16,61 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public Node GoalNode { get; set; } = new();
     public Node Current { get; set; } = new();
     public bool IsDiagonalEnabled { get; set; }
-    #endregion
+
+    #endregion Algorithem Constants
+
     #region Visualization Constants
+
     public DelegateCommand StartCommand { get; set; }
+
+    private bool CanStart() => NodeMap[0, 0] != null;
+
     public DelegateCommand CalculateCommand { get; set; }
     public DelegateCommand WallToRoadCommand { get; set; }
+
+    private bool CanRoad() => NodeMap[0, 0] != null && NodeMap[0, 0].IsWall == true;
+
     public DelegateCommand SetConditionCommand { get; set; }
+    public DelegateCommand RemoveConditionCommand { get; set; }
+
+    private bool CanCondition() => NodeMap[0, 0] != null;
+
     public DelegateCommand AddMazeCommand { get; set; }
+    public DelegateCommand RemoveMazeCommand { get; set; }
+
+    private bool CanMaze() => NodeMap[0, 0] != null;
+
     public ObservableCollection<Node> Nodes { get; set; } = new();
     public ObservableCollection<PathScore> PathScore { get; set; } = new();
     public Point StartPoint { get; set; } = new();
     public Point EndPoint { get; set; } = new();
     public int Delay { get; set; } = 0;
     public Random Random = new();
-    private readonly object _Nodeslock = new();
+
+    //private readonly object _Nodeslock = new();
     private readonly object _PathScorelock = new();
+
     public bool IsWeatherEnabled { get; set; }
     public bool IsMazeEnabled { get; set; }
-    #endregion
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    #endregion Visualization Constants
+
     public AStarAlgorithmViewModel()
     {
-        StartCommand = new DelegateCommand(async () => await StartAsync());
+        StartCommand = new DelegateCommand(async () => await StartAsync(), CanStart);
         CalculateCommand = new DelegateCommand(async () => await CalculateNodesAsync());
-        WallToRoadCommand = new DelegateCommand(async () => await WallToRoadAsync());
-        SetConditionCommand = new DelegateCommand(async () => await AddWeatherConditionAsync());
-        AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync());
+        WallToRoadCommand = new DelegateCommand(async () => await WallToRoadAsync(), CanRoad);
+        SetConditionCommand = new DelegateCommand(async () => await AddWeatherConditionAsync(), CanCondition);
+        RemoveConditionCommand = new DelegateCommand(async () => await RemoveWeatherConditionAsync(), CanCondition);
+        AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(), CanMaze);
+        RemoveMazeCommand = new DelegateCommand(async () => await RemoveMazeAsync(), CanMaze);
+        NodeMap = new Node[X, Y];
         // BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
         BindingOperations.EnableCollectionSynchronization(PathScore, _PathScorelock);
     }
 
-    private async Task AddMazeAsync()
-    {
-        await Task.WhenAll(AddMazeOuterWallsAsync(), AddMazeInnerWallsAsync(true, 1, Y - 2, 1, X - 2, new Point(X - 2, Y - 2)));
-        await GetNodesAsync();
-    }
-
     #region A* search algorithm Code Section
+
     private async Task CalculateNodesAsync()
     {
         await Task.Run(async () =>
@@ -69,17 +87,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     };
                 }
             }
-            NodeMap[1, 1].Set = Enum.AStarSet.Start;
-            NodeMap[1, 1].IsWall = false;
-            NodeMap[X - 2, Y - 2].Set = Enum.AStarSet.End;
-            NodeMap[X - 2, Y - 2].IsWall = false;
-
-            StartPoint = new(1, 1);
-            EndPoint = new(X - 2, Y - 2);
-
-
-            StartNode = NodeMap[(int)StartPoint.X, (int)StartPoint.Y];
-            GoalNode = NodeMap[(int)EndPoint.X, (int)EndPoint.Y];
+            await SetStartEndPoint();
 
             OpenSet.Clear();
             CloseSet.Clear();
@@ -94,6 +102,27 @@ public class AStarAlgorithmViewModel : BaseViewModel
             await GetNodesAsync();
         });
     }
+
+    private async Task SetStartEndPoint()
+    {
+        await Task.Run(() =>
+        {
+            NodeMap[1, 1].Set = Enum.AStarSet.Start;
+            NodeMap[1, 1].IsWall = false;
+            NodeMap[1, 1].Condition = Enum.ExtraCondition.Clear;
+
+            NodeMap[X - 2, Y - 2].Set = Enum.AStarSet.End;
+            NodeMap[X - 2, Y - 2].IsWall = false;
+            NodeMap[X - 2, Y - 2].Condition = Enum.ExtraCondition.Clear;
+
+            StartPoint = new(1, 1);
+            EndPoint = new(X - 2, Y - 2);
+
+            StartNode = NodeMap[(int)StartPoint.X, (int)StartPoint.Y];
+            GoalNode = NodeMap[(int)EndPoint.X, (int)EndPoint.Y];
+        });
+    }
+
     private async Task StartAsync()
     {
         //await GetNeighborsAsync(IsDiagonalEnabled);
@@ -104,10 +133,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
         {
             await ClearNodeNeighbors();
             await GetNeighborsAsync();
+            await SetStartEndPoint();
             await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
-
-            StartNode = NodeMap[(int)StartPoint.X, (int)StartPoint.Y];
-            GoalNode = NodeMap[(int)EndPoint.X, (int)EndPoint.Y];
 
             OpenSet.Clear();
             CloseSet.Clear();
@@ -153,7 +180,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
                         neighbor.CameFrom = Current;
 
                         OpenSet.Add(neighbor);
-
                     }
                     await FindPathAsync();
                     await CheckOpenSetCloseSetPathAsync();
@@ -162,6 +188,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task GetNeighborsAsync()
     {
         await Task.Run(() =>
@@ -216,6 +243,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task CheckForLowestFAsync()
     {
         await Task.Run(() =>
@@ -228,6 +256,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task ComputeHeuristicCosts(double D)
     {
         await Task.Run(async () =>
@@ -251,10 +280,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     int dy = Math.Abs(node.Y - goal.Y);
                     return await new ValueTask<double>(dx + dy);
                 }
-
             }
         });
     }
+
     private async ValueTask<double> MovementCost(Node firstNode, Node secondNode)
     {
         if (IsDiagonalEnabled)
@@ -270,6 +299,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             return await new ValueTask<double>(dx - dy);
         }
     }
+
     private async Task FindPathAsync()
     {
         await Task.Run(() =>
@@ -284,6 +314,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task CalculatePathValueAsync()
     {
         await Task.Run(() =>
@@ -300,8 +331,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
             PathScore.Add(pathScore);
         });
     }
-    #endregion
+
+    #endregion A* search algorithm Code Section
+
     #region WeatherConditions Code Section
+
     private async Task AddWeatherConditionAsync()
     {
         await Task.Run(async () =>
@@ -310,20 +344,47 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 if (!node.IsWall && !node.IsRoad)
                 {
-                    node.Condition = await RandomEnumValue<Enum.ExtraCondition>();
+                    node.Condition = await RandomEnumValue();
                 }
             }
             await GetNodesAsync();
         });
     }
-    private async ValueTask<T> RandomEnumValue<T>()
-    {
-        Array? v = System.Enum.GetValues(typeof(T));
 
-        return await new ValueTask<T>((T)v.GetValue(Random.Next(2, v.Length)));
+    private async Task RemoveWeatherConditionAsync()
+    {
+        await Task.Run(async () =>
+        {
+            foreach (var node in NodeMap)
+            {
+                if (!node.IsWall && !node.IsRoad)
+                {
+                    node.Condition = Enum.ExtraCondition.Clear;
+                }
+            }
+            await GetNodesAsync();
+        });
     }
-    #endregion
+
+    private static async Task<Enum.ExtraCondition> RandomEnumValue()
+    {
+        Dictionary<Enum.ExtraCondition, float> condition = new();
+        condition.Add(Enum.ExtraCondition.Sunny, 0.8f);
+        condition.Add(Enum.ExtraCondition.Cloudy, 0.3f);
+        condition.Add(Enum.ExtraCondition.Hail, 0.2f);
+        condition.Add(Enum.ExtraCondition.Rainy, 0.3f);
+        condition.Add(Enum.ExtraCondition.HeavyRain, 0.2f);
+        condition.Add(Enum.ExtraCondition.Lightning, 0.1f);
+        condition.Add(Enum.ExtraCondition.LightningRainy, 0.1f);
+        condition.RandomElementByWeight(e => e.Value);
+        await Task.Delay(0);
+        return condition.RandomElementByWeight(e => e.Value).Key;
+    }
+
+    #endregion WeatherConditions Code Section
+
     #region Maze Code Section
+
     private async Task AddMazeOuterWallsAsync()
     {
         await Task.Run(() =>
@@ -336,18 +397,22 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     {
                         NodeMap[i, j].Set = Enum.AStarSet.Wall;
                         NodeMap[i, j].IsWall = true;
+                        NodeMap[i, j].Condition = Enum.ExtraCondition.Clear;
                     }
                 }
                 else
                 {
                     NodeMap[i, 0].Set = Enum.AStarSet.Wall;
                     NodeMap[i, 0].IsWall = true;
+                    NodeMap[i, 0].Condition = Enum.ExtraCondition.Clear;
                     NodeMap[i, Y - 1].Set = Enum.AStarSet.Wall;
                     NodeMap[i, Y - 1].IsWall = true;
+                    NodeMap[i, Y - 1].Condition = Enum.ExtraCondition.Clear;
                 }
             }
         });
     }
+
     private async Task AddMazeInnerWallsAsync(bool h, int minX, int maxX, int minY, int maxY, Point gate)
     {
         await Task.Run(async () =>
@@ -362,7 +427,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 await Task.WhenAll(AddHWallAsync(minX, maxX, (int)y),
                                    AddMazeInnerWallsAsync(!h, minX, maxX, minY, (int)y - 1, gate),
                                    AddMazeInnerWallsAsync(!h, minX, maxX, (int)y + 1, maxY, gate));
-
             }
             else
             {
@@ -377,6 +441,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task AddVWallAsync(int minY, int maxY, int x)
     {
         await Task.Run(async () =>
@@ -393,10 +458,12 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 {
                     NodeMap[i, x].Set = Enum.AStarSet.Wall;
                     NodeMap[i, x].IsWall = true;
+                    NodeMap[i, x].Condition = Enum.ExtraCondition.Clear;
                 }
             }
         });
     }
+
     private async Task AddHWallAsync(int minX, int maxX, int y)
     {
         await Task.Run(async () =>
@@ -413,15 +480,18 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 {
                     NodeMap[y, i].Set = Enum.AStarSet.Wall;
                     NodeMap[y, i].IsWall = true;
+                    NodeMap[y, i].Condition = Enum.ExtraCondition.Clear;
                 }
             }
         });
     }
+
     private static async ValueTask<decimal> RandomNumberAsync(int min, int max)
     {
         Random? rnd = new();
         return await new ValueTask<decimal>((decimal)Math.Floor((rnd.NextDouble() * (max - min + 1)) + min));
     }
+
     private async Task WallToRoadAsync()
     {
         await Task.Run(async () =>
@@ -432,14 +502,62 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 {
                     node.IsWall = false;
                     node.IsRoad = true;
+                    node.Set = Enum.AStarSet.Road;
                     node.Condition = Enum.ExtraCondition.Road;
+                }
+            }
+            for (int i = 0; i < X; ++i)
+            {
+                if (i == 0 || i == X - 1)
+                {
+                    for (int j = 0; j < Y; ++j)
+                    {
+                        NodeMap[i, j].Set = Enum.AStarSet.Wall;
+                        NodeMap[i, j].IsWall = true;
+                        NodeMap[i, j].Condition = Enum.ExtraCondition.Clear;
+                    }
+                }
+                else
+                {
+                    NodeMap[i, 0].Set = Enum.AStarSet.Wall;
+                    NodeMap[i, 0].IsWall = true;
+                    NodeMap[i, 0].Condition = Enum.ExtraCondition.Clear;
+                    NodeMap[i, Y - 1].Set = Enum.AStarSet.Wall;
+                    NodeMap[i, Y - 1].IsWall = true;
+                    NodeMap[i, Y - 1].Condition = Enum.ExtraCondition.Clear;
                 }
             }
             await GetNodesAsync();
         });
     }
-    #endregion
+
+    private async Task AddMazeAsync()
+    {
+        await Task.WhenAll(AddMazeOuterWallsAsync(), AddMazeInnerWallsAsync(true, 1, Y - 2, 1, X - 2, new Point(X - 2, Y - 2)));
+        await GetNodesAsync();
+    }
+
+    private async Task RemoveMazeAsync()
+    {
+        await Task.Run(async () =>
+        {
+            foreach (var node in NodeMap)
+            {
+                if (node.IsWall || node.IsRoad)
+                {
+                    node.Set = Enum.AStarSet.Undefined;
+                    node.IsWall = false;
+                    node.IsRoad = false;
+                }
+            }
+            await GetNodesAsync();
+        });
+    }
+
+    #endregion Maze Code Section
+
     #region Visualization Code Section
+
     private async Task CheckOpenSetCloseSetPathAsync()
     {
         await Task.Run(() =>
@@ -461,6 +579,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task ClearNodeMapAsync()
     {
         await Task.Run(() =>
@@ -478,6 +597,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task ClearNodeNeighbors()
     {
         await Task.Run(() =>
@@ -488,6 +608,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task GetNodesAsync()
     {
         await Task.Run(() =>
@@ -499,10 +620,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     Nodes.Add(node);
                     OnPropertyChanged(nameof(Nodes));
                 });
-
             }
-
         });
     }
-    #endregion
+
+    #endregion Visualization Code Section
 }

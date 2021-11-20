@@ -15,6 +15,8 @@ global using RedWolf.Core;
 
 global using WPF.ViewModel;
 global using WPF.Model;
+global using WPF.Extensions;
+global using WPF.Enum;
 
 
 

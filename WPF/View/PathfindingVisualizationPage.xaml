@@ -20,6 +20,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ToolBarTray IsLocked="True">
@@ -31,12 +32,12 @@
                 <Separator />
                 <Button Command="{Binding SetConditionCommand}"
                         Content="{mD:PackIcon Kind=WeatherSunnyAlert}" />
-                <Button Command="{Binding SetConditionCommand}"
+                <Button Command="{Binding RemoveConditionCommand}"
                         Content="{mD:PackIcon Kind=WeatherSunnyOff}" />
                 <Separator />
                 <Button Command="{Binding AddMazeCommand}"
                         Content="{mD:PackIcon Kind=PuzzlePlus}" />
-                <Button Command="{Binding AddMazeCommand}"
+                <Button Command="{Binding RemoveMazeCommand}"
                         Content="{mD:PackIcon Kind=PuzzleMinus}" />
                 <Separator />
                 <Button Command="{Binding WallToRoadCommand}"
@@ -59,11 +60,17 @@
                          Width="15"
                          HorizontalContentAlignment="Center" />
                 <Separator />
-                
-                <Separator />
-                <TextBlock Text="Use Maze :"
+                <TextBlock Text="Width :"
                            VerticalAlignment="Center" />
-                <ToggleButton IsChecked="{Binding IsMazeEnabled}" />
+                <TextBox Text="{Binding X}"
+                         Width="15"
+                         HorizontalContentAlignment="Center" />
+                <TextBlock Text="Height :"
+                           VerticalAlignment="Center" />
+                <TextBox Text="{Binding Y}"
+                         Width="15"
+                         HorizontalContentAlignment="Center" />
+                <Separator />
                 <TextBlock Text="Use Diagonal :"
                            VerticalAlignment="Center" />
                 <ToggleButton IsChecked="{Binding IsDiagonalEnabled}" />
@@ -99,27 +106,27 @@
                         IsSelectionRangeEnabled="True" />
             </ToolBar>
         </ToolBarTray>
-
-        <ItemsControl ItemsSource="{Binding Nodes}"
-                      Margin="10"
-                      Grid.Row="1">
+        <Expander Grid.Row="1">
+            <DataGrid ItemsSource="{Binding PathScore}" />
+        </Expander>
+        <ItemsControl Margin="10"
+                      Grid.Row="2"
+                      ItemsSource="{Binding Nodes}">
             <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                    <Canvas>
-
-                    </Canvas>
+                <ItemsPanelTemplate>
+                    <Canvas />
                 </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ContentPresenter">
-                        <Setter Property="Canvas.Left"
-                                Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
-                        <Setter Property="Canvas.Top"
-                                Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left"
+                            Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                    <Setter Property="Canvas.Top"
+                            Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
                     <Grid>
                         <Rectangle Width="20"
                                    Height="20"
@@ -128,7 +135,6 @@
                                    StrokeThickness="0"
                                    ToolTip="{Binding ToolTip}"
                                    Fill="{Binding Set, Converter={local:AStarSetToColorValueConverter}}" />
-
                         <mD:PackIcon Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
                                      Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
                                      Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}"
@@ -137,13 +143,7 @@
                                      VerticalAlignment="Center" />
                     </Grid>
                 </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        <DataGrid Grid.Row="1"
-                  Margin="1240,10,10,10"
-                  ItemsSource="{Binding PathScore}">
-            
-        </DataGrid>
-            
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </UserControl>

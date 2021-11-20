@@ -6,9 +6,9 @@ public enum ExtraCondition
     Road = 1,
     Sunny = 100,
     Cloudy = 150,
-    Hail = 350,
-    Rainy = 500,
-    HeavyRain = 1000,
-    Lightning = 700,
+    Hail = 500,
+    Rainy = 700,
+    HeavyRain = 1500,
+    Lightning = 600,
     LightningRainy = 1300,
 }
