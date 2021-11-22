@@ -8,15 +8,15 @@ public class ConditionToIconValueConverter : BaseValueConverter<ConditionToIconV
     {
         return value switch
         {
-            Enum.ExtraCondition.Clear => new PackIcon().Kind = PackIconKind.Dot,
-            Enum.ExtraCondition.Road => new PackIcon().Kind = PackIconKind.Road,
-            Enum.ExtraCondition.Sunny => new PackIcon().Kind = PackIconKind.WeatherSunny,
-            Enum.ExtraCondition.Cloudy => new PackIcon().Kind = PackIconKind.WeatherCloudy,
-            Enum.ExtraCondition.Hail => new PackIcon().Kind = PackIconKind.WeatherHail,
-            Enum.ExtraCondition.Rainy => new PackIcon().Kind = PackIconKind.WeatherRainy,
-            Enum.ExtraCondition.HeavyRain => new PackIcon().Kind = PackIconKind.WeatherHeavyRain,
-            Enum.ExtraCondition.Lightning => new PackIcon().Kind = PackIconKind.WeatherLightning,
-            Enum.ExtraCondition.LightningRainy => new PackIcon().Kind = PackIconKind.WeatherLightningRainy,
+            ExtraCondition.Clear => new PackIcon().Kind = PackIconKind.Dot,
+            ExtraCondition.Road => new PackIcon().Kind = PackIconKind.Road,
+            ExtraCondition.Sunny => new PackIcon().Kind = PackIconKind.WeatherSunny,
+            ExtraCondition.Cloudy => new PackIcon().Kind = PackIconKind.WeatherCloudy,
+            ExtraCondition.Hail => new PackIcon().Kind = PackIconKind.WeatherHail,
+            ExtraCondition.Rainy => new PackIcon().Kind = PackIconKind.WeatherRainy,
+            ExtraCondition.HeavyRain => new PackIcon().Kind = PackIconKind.WeatherHeavyRain,
+            ExtraCondition.Lightning => new PackIcon().Kind = PackIconKind.WeatherLightning,
+            ExtraCondition.LightningRainy => new PackIcon().Kind = PackIconKind.WeatherLightningRainy,
 
             _ => new PackIcon().Kind = PackIconKind.Dot,
         };

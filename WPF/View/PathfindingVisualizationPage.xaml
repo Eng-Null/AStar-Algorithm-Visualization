@@ -5,6 +5,8 @@
              xmlns:local="clr-namespace:WPF"
              xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+             xmlns:valueConverter="clr-namespace:WPF.ValueConverter"
              xmlns:viewModel="clr-namespace:WPF.ViewModel"
              d:DataContext="{d:DesignInstance Type=viewModel:AStarAlgorithmViewModel,
                                               IsDesignTimeCreatable=True}"
@@ -127,22 +129,35 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Rectangle Width="20"
-                                   Height="20"
-                                   mD:ButtonAssist.CornerRadius="0"
-                                   Fill="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
-                                   Stroke="{StaticResource PrimaryHueLightBrush}"
-                                   StrokeThickness="0"
-                                   ToolTip="{Binding ToolTip}" />
-                        <mD:PackIcon HorizontalAlignment="Center"
+                        <Image Width="20"
+                               Height="20"
+                               Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
+                               Stretch="UniformToFill"
+                               ToolTip="{Binding ToolTip}" />
+
+                        <Image Width="20"
+                               Height="20"
+                               Opacity="0.2"
+                               Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
+                               ToolTip="{Binding ToolTip}" />
+
+                        <!--<mD:PackIcon HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
                                      Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
                                      Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
                                      Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}"
-                                     ToolTip="{Binding ToolTip}" />
+                                      />-->
+
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <Canvas Grid.Row="2"
+                Margin="10">
+
+            <Path Data="{Binding PathData}"
+                  Stroke="Black"
+                  StrokeThickness="4" />
+        </Canvas>
     </Grid>
 </UserControl>

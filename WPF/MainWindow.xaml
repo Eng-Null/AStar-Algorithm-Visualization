@@ -7,12 +7,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:view="clr-namespace:WPF.View"
         xmlns:viewModel="clr-namespace:WPF.ViewModel"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         x:Name="Host"
         Width="1500"
         Height="820"
         d:DataContext="{d:DesignInstance Type=viewModel:ApplicationViewModel,
                                          IsDesignTimeCreatable=True}"
-        AllowsTransparency="True"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Opacity="0.98"
@@ -23,6 +23,7 @@
         TextOptions.TextRenderingMode="Auto"
         WindowStyle="None"
         mc:Ignorable="d">
+    <!--  AllowsTransparency="True"  -->
     <!--#region WindowChrome-->
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=Header}"
@@ -61,6 +62,12 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
                                 <!--#region WindowTitle Column 1-->
+                                <Viewbox>
+                                    <Grid>
+                                        <Image Height="32"
+                                               Source="/Img/logo-login.png" />
+                                    </Grid>
+                                </Viewbox>
                                 <Viewbox Grid.Column="1"
                                          MaxHeight="40"
                                          Margin="16,0,0,0"
@@ -129,7 +136,8 @@
                                                       Size=24}"
                                  Style="{StaticResource MaterialDesignNavigationRailTabItem}"
                                  ToolTip="Presentation">
-                            <!--<local:CarsDetailsPage />-->
+                            <wv2:WebView2 x:Name="webView"
+                                          Source="https://docs.google.com/" />
                         </TabItem>
                         <TabItem Header="{mD:PackIcon Kind=Code,
                                                       Size=24}"
@@ -141,7 +149,8 @@
                                                       Size=24}"
                                  Style="{StaticResource MaterialDesignNavigationRailTabItem}"
                                  ToolTip="IEEE Conference Paper">
-                            <TextBlock Text="IEEE Conference Paper" />
+                            <wv2:WebView2 x:Name="webView2"
+                                          Source="https://ftp.cc.uoc.gr/mirrors/CTAN/macros/latex/contrib/IEEEtran/IEEEtran_HOWTO.pdf" />
                         </TabItem>
                     </TabControl>
                 </Grid>

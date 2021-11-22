@@ -8,16 +8,10 @@ public class AStarSetToColorValueConverter : BaseValueConverter<AStarSetToColorV
     {
         return value switch
         {
-            Enum.AStarSet.Start => new SolidColorBrush(Colors.LightGreen),
-            Enum.AStarSet.End => new SolidColorBrush(Colors.Blue),
-            Enum.AStarSet.Closed => new SolidColorBrush(Colors.LightPink),
-            Enum.AStarSet.Open => new SolidColorBrush(Colors.Yellow),
-            Enum.AStarSet.Wall => new SolidColorBrush(Colors.Black),
-            Enum.AStarSet.Road => new SolidColorBrush(Colors.DarkGray),
-            Enum.AStarSet.Path => new SolidColorBrush(Colors.LightBlue),
-            Enum.AStarSet.Undefined => new SolidColorBrush(Colors.LightGray),
-
-            _ => new SolidColorBrush(Colors.White),
+            Set.Closed => $"/Img/ClosedSet.png",
+            Set.Open => $"/Img/OpenSet.png",
+            Set.Undefined => null,
+            _ => null,
         };
     }
 

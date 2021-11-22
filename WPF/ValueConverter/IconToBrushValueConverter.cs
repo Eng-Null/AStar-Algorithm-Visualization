@@ -8,17 +8,15 @@ public class IconToBrushValueConverter : BaseValueConverter<IconToBrushValueConv
     {
         return value switch
         {
-            Enum.ExtraCondition.Clear => new SolidColorBrush(Colors.LightGray),
-            Enum.ExtraCondition.Sunny => new SolidColorBrush(Colors.LightYellow),
-            Enum.ExtraCondition.Cloudy => new SolidColorBrush(Colors.Gray),
-            Enum.ExtraCondition.Hail => new SolidColorBrush(Colors.WhiteSmoke),
-            Enum.ExtraCondition.Rainy => new SolidColorBrush(Colors.LightBlue),
-            Enum.ExtraCondition.HeavyRain => new SolidColorBrush(Colors.DarkBlue),
-            Enum.ExtraCondition.Lightning => new SolidColorBrush(Colors.Yellow),
-            Enum.ExtraCondition.LightningRainy => new SolidColorBrush(Colors.GreenYellow),
-            Enum.ExtraCondition.Road => new SolidColorBrush(Colors.Black),
-
-
+            ExtraCondition.Clear => new SolidColorBrush(Colors.LightGray),
+            ExtraCondition.Sunny => new SolidColorBrush(Colors.LightYellow),
+            ExtraCondition.Cloudy => new SolidColorBrush(Colors.Gray),
+            ExtraCondition.Hail => new SolidColorBrush(Colors.WhiteSmoke),
+            ExtraCondition.Rainy => new SolidColorBrush(Colors.LightBlue),
+            ExtraCondition.HeavyRain => new SolidColorBrush(Colors.DarkBlue),
+            ExtraCondition.Lightning => new SolidColorBrush(Colors.Yellow),
+            ExtraCondition.LightningRainy => new SolidColorBrush(Colors.GreenYellow),
+            ExtraCondition.Road => new SolidColorBrush(Colors.Black),
             _ => new SolidColorBrush(Colors.White),
         };
     }

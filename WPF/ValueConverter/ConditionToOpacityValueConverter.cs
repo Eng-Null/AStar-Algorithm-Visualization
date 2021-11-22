@@ -6,7 +6,7 @@ public class ConditionToOpacityValueConverter : BaseValueConverter<ConditionToOp
     {
         return value switch
         {
-            Enum.AStarSet.Wall => 0,
+            AStarSet.Obstacle => 0,
             _ => 100,
         };
     }
