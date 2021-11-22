@@ -83,7 +83,6 @@
     <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1020.30" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
-    <PackageReference Include="SharpVectors" Version="1.7.6" />
   </ItemGroup>
 
   <ItemGroup>
