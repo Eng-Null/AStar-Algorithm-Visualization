@@ -1,4 +1,5 @@
-﻿namespace WPF.Model;
+﻿using Newtonsoft.Json;
+namespace WPF.Model;
 
 public class Node : BaseViewModel
 {
@@ -7,6 +8,7 @@ public class Node : BaseViewModel
     public double F { get; set; }
     public double G { get; set; }
     public double H { get; set; }
+    [JsonIgnore]
     public List<Node> Neighbors { get; set; } = new();
     public Node? CameFrom { get; set; }
     public bool IsObstacle { get; set; }

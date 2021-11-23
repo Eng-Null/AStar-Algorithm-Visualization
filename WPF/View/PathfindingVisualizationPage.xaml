@@ -32,6 +32,11 @@
                 <Button Command="{Binding StartCommand}"
                         Content="{mD:PackIcon Kind=Play}" />
                 <Separator />
+                <Button Command="{Binding SaveCommand}"
+                        Content="{mD:PackIcon Kind=ContentSave}" />
+                <Button Command="{Binding LoadCommand}"
+                        Content="{mD:PackIcon Kind=OpenInNew}" />
+                <Separator />
                 <Button Command="{Binding SetConditionCommand}"
                         Content="{mD:PackIcon Kind=WeatherSunnyAlert}" />
                 <Button Command="{Binding RemoveConditionCommand}"

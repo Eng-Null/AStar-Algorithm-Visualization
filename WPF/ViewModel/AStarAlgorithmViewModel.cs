@@ -1,4 +1,8 @@
-﻿namespace WPF.ViewModel;
+﻿using Newtonsoft.Json;
+using System.IO;
+using System.Windows.Forms;
+
+namespace WPF.ViewModel;
 //https://en.wikipedia.org/wiki/A*_search_algorithm
 //https://en.wikipedia.org/wiki/Maze_generation_algorithm
 
@@ -38,6 +42,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     public DelegateCommand AddMazeCommand { get; set; }
     public DelegateCommand RemoveMazeCommand { get; set; }
+    public DelegateCommand SaveCommand { get; set; }
+    public DelegateCommand LoadCommand { get; set; }
 
     private bool CanMaze() => NodeMap[0, 0] != null;
 
@@ -65,6 +71,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
         RemoveConditionCommand = new DelegateCommand(async () => await RemoveWeatherConditionAsync(), CanCondition);
         AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(), CanMaze);
         RemoveMazeCommand = new DelegateCommand(async () => await RemoveMazeAsync(), CanMaze);
+        SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanMaze);
+        LoadCommand = new DelegateCommand(async () => await LoadAsync(), CanMaze);
         NodeMap = new Node[X, Y];
         // BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
         BindingOperations.EnableCollectionSynchronization(PathScore, _PathScorelock);
@@ -93,7 +101,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             PathData = "";
             OpenSet.Clear();
             CloseSet.Clear();
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 Nodes.Clear();
             });
@@ -127,10 +135,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     private async Task StartAsync()
     {
-        //await GetNeighborsAsync(IsDiagonalEnabled);
-        //await AddWeatherConditionAsync();
-        //await ComputeHeuristicCosts();
-        //await ClearNodeMapAsync();
         await Task.Run(async () =>
         {
             await ClearNodeNeighbors();
@@ -743,7 +747,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
         {
             foreach (var node in NodeMap)
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     Nodes.Add(node);
                     OnPropertyChanged(nameof(Nodes));
@@ -753,4 +757,66 @@ public class AStarAlgorithmViewModel : BaseViewModel
     }
 
     #endregion Visualization Code Section
+
+    #region Load/Save NodeMap
+    private async Task LoadAsync()
+    {
+        OpenFileDialog openFileDialog = new();
+        openFileDialog.InitialDirectory = System.Windows.Forms.Application.StartupPath;
+        openFileDialog.Title = "Load Json Files";
+        openFileDialog.CheckFileExists = true;
+        openFileDialog.CheckPathExists = true;
+        openFileDialog.DefaultExt = "Json";
+        openFileDialog.Filter = "Json files (*.Json)|*.json|All files (*.*)|*.*";
+        openFileDialog.FilterIndex = 1;
+        openFileDialog.RestoreDirectory = true;
+
+        string openPath = "";
+
+        if (openFileDialog.ShowDialog() == DialogResult.OK)
+        {
+            openPath = openFileDialog.FileName;
+        }
+        await Task.Run(async () =>
+        {
+            if (openPath != "")
+            {
+                using StreamReader r = new(openPath);
+                string json = r.ReadToEnd();
+                Node[,] items = JsonConvert.DeserializeObject<Node[,]>(json);
+                X = items.GetLength(0);
+                Y = items.GetLength(1);
+                NodeMap = new Node[X, Y];
+                NodeMap = items;
+
+                await GetNodesAsync();
+            }
+        });
+    }
+
+    private async Task SaveAsync()
+    {
+        SaveFileDialog saveFileDialog = new();
+        saveFileDialog.InitialDirectory = System.Windows.Forms.Application.StartupPath;
+        saveFileDialog.Title = "Save Json Files";
+        saveFileDialog.CheckPathExists = true;
+        saveFileDialog.DefaultExt = "Json";
+        saveFileDialog.Filter = "Json files (*.Json)|*.json|All files (*.*)|*.*";
+        saveFileDialog.FilterIndex = 1;
+        saveFileDialog.RestoreDirectory = true;
+        string savePath = "";
+        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+        {
+            savePath = saveFileDialog.FileName;
+        }
+        await Task.Run(() =>
+        {
+            if (savePath != "")
+            {
+                var json = JsonConvert.SerializeObject(NodeMap);
+                File.WriteAllText($"{savePath}", json);
+            }
+        });
+    }
+    #endregion
 }
