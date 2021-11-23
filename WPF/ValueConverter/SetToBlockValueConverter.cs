@@ -45,42 +45,42 @@ public class SetToBlockValueConverter : BaseValueConverter<SetToBlockValueConver
             _ => null,
         };
     }
+    private string GetRandomObstacle()
+    {
+        Dictionary<string, float> condition = new();
+        for (int i = 1; i <= 15; i++)
+        {
+            condition.Add($"/Img/Tree{i}.png", 0.5f);
+        }
+        for (int i = 1; i <= 15; i++)
+        {
+            condition.Add($"/Img/House{i}.png", 0.8f);
+        }
 
-    //private object GetRandomMaze()
+        return condition.RandomElementByWeight(e => e.Value).Key;
+    }
+
+    //private static string GetRandomObstacle()
     //{
     //    var rnd = new Random();
-    //    return rnd.Next(4) switch
+    //    return rnd.Next(11) switch
     //    {
-    //        0 => $"/Img/House1.png",
-    //        1 => $"/Img/House2.png",
-    //        2 => $"/Img/House3.png",
-    //        3 => $"/Img/House4.png",
-    //        4 => $"/Img/House5.png",
+    //        0 => $"/Img/Tree{rnd}.png",
+    //        1 => $"/Img/Tree{rnd}.png",
+    //        2 => $"/Img/Tree{rnd}.png",
+    //        3 => $"/Img/Tree{rnd}.png",
+    //        4 => $"/Img/Tree{rnd}.png",
+    //        5 => $"/Img/Tree{rnd}.png",
+    //        6 => $"/Img/Tree{rnd}.png",
+
+    //        7 => $"/Img/House1.png",
+    //        8 => $"/Img/House2.png",
+    //        9 => $"/Img/House3.png",
+    //        10 => $"/Img/House4.png",
+    //        11 => $"/Img/House5.png",
     //        _ => null,
     //    };
     //}
-
-    private static string GetRandomObstacle()
-    {
-        var rnd = new Random();
-        return rnd.Next(11) switch
-        {
-            0 => $"/Img/Tree1.png",
-            1 => $"/Img/Tree2.png",
-            2 => $"/Img/Tree3.png",
-            3 => $"/Img/Tree4.png",
-            4 => $"/Img/Tree5.png",
-            5 => $"/Img/Tree6.png",
-            6 => $"/Img/Tree7.png",
-
-            7 => $"/Img/House1.png",
-            8 => $"/Img/House2.png",
-            9 => $"/Img/House3.png",
-            10 => $"/Img/House4.png",
-            11 => $"/Img/House5.png",
-            _ => null,
-        };
-    }
 
     public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {

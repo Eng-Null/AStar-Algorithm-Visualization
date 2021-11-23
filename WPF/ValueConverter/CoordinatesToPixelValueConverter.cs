@@ -4,7 +4,7 @@ public class CoordinatesToPixelValueConverter : BaseValueConverter<CoordinatesTo
 {
     public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return int.Parse(value.ToString()) * 20;
+        return int.Parse(value.ToString()) * StaticValues.TileSize;
     }
 
     public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

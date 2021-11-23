@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 using System.Windows.Forms;
+using static WPF.StaticValues;
 
 namespace WPF.ViewModel;
 //https://en.wikipedia.org/wiki/A*_search_algorithm
@@ -51,7 +52,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public ObservableCollection<PathScore> PathScore { get; set; } = new();
     public Point StartPoint { get; set; } = new();
     public Point EndPoint { get; set; } = new();
-    public int Delay { get; set; } = 40;
+    public int Delay { get; set; } = 20;
     public Random Random = new();
 
     //private readonly object _Nodeslock = new();
@@ -312,9 +313,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
             PathData = "";
             Node? temp = Current;
             Path.Add(temp);
+            var middle = TileSize / 2;
             while (temp.CameFrom is not null)
             {
-                PathData += $"M {temp.X * 20 + 10},{temp.Y * 20 + 10} {temp.CameFrom.X * 20 + 10},{temp.CameFrom.Y * 20 + 10} ";
+                PathData += $"M {temp.X * TileSize + middle},{temp.Y * TileSize + middle} {temp.CameFrom.X * TileSize + middle},{temp.CameFrom.Y * TileSize + middle} ";
                 Path.Add(temp.CameFrom);
                 temp = temp.CameFrom;
             }
@@ -372,17 +374,16 @@ public class AStarAlgorithmViewModel : BaseViewModel
         });
     }
 
-    private static async Task<Enum.ExtraCondition> RandomEnumValue()
+    private static async Task<ExtraCondition> RandomEnumValue()
     {
-        Dictionary<Enum.ExtraCondition, float> condition = new();
-        condition.Add(Enum.ExtraCondition.Sunny, 0.8f);
-        condition.Add(Enum.ExtraCondition.Cloudy, 0.3f);
-        condition.Add(Enum.ExtraCondition.Hail, 0.2f);
-        condition.Add(Enum.ExtraCondition.Rainy, 0.3f);
-        condition.Add(Enum.ExtraCondition.HeavyRain, 0.2f);
-        condition.Add(Enum.ExtraCondition.Lightning, 0.1f);
-        condition.Add(Enum.ExtraCondition.LightningRainy, 0.1f);
-        condition.RandomElementByWeight(e => e.Value);
+        Dictionary<ExtraCondition, float> condition = new();
+        condition.Add(ExtraCondition.Sunny, 0.8f);
+        condition.Add(ExtraCondition.Cloudy, 0.3f);
+        condition.Add(ExtraCondition.Hail, 0.2f);
+        condition.Add(ExtraCondition.Rainy, 0.3f);
+        condition.Add(ExtraCondition.HeavyRain, 0.2f);
+        condition.Add(ExtraCondition.Lightning, 0.1f);
+        condition.Add(ExtraCondition.LightningRainy, 0.1f);
         await Task.Delay(0);
         return condition.RandomElementByWeight(e => e.Value).Key;
     }

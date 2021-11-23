@@ -5,11 +5,11 @@
              xmlns:local="clr-namespace:WPF"
              xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
              xmlns:valueConverter="clr-namespace:WPF.ValueConverter"
              xmlns:viewModel="clr-namespace:WPF.ViewModel"
-             d:DataContext="{d:DesignInstance Type=viewModel:AStarAlgorithmViewModel,
-                                              IsDesignTimeCreatable=True}"
+             x:Name="Host"
+             d:DataContext="{d:DesignInstance IsDesignTimeCreatable=True,
+                                              Type={x:Type viewModel:AStarAlgorithmViewModel}}"
              Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{DynamicResource MaterialDesignFont}"
              TextElement.FontSize="13"
@@ -18,6 +18,9 @@
              TextOptions.TextFormattingMode="Ideal"
              TextOptions.TextRenderingMode="Auto"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <local:StaticValues x:Key="StaticValues" />
+    </UserControl.Resources>
     <!--  x:TypeArguments="AStarAlgorithmViewModel"  -->
     <Grid>
         <Grid.RowDefinitions>
@@ -52,36 +55,48 @@
                 <Separator />
                 <TextBlock VerticalAlignment="Center"
                            Text="Start Point :" />
-                <TextBox Width="15"
+                <TextBox MinWidth="15"
                          HorizontalContentAlignment="Center"
                          Text="{Binding StartPoint.X}" />
-                <TextBox Width="15"
+                <TextBox MinWidth="15"
                          HorizontalContentAlignment="Center"
                          Text="{Binding StartPoint.Y}" />
                 <Separator />
                 <TextBlock VerticalAlignment="Center"
                            Text="End Point :" />
-                <TextBox Width="15"
+                <TextBox MinWidth="15"
                          HorizontalContentAlignment="Center"
                          Text="{Binding EndPoint.X}" />
-                <TextBox Width="15"
+                <TextBox MinWidth="15"
                          HorizontalContentAlignment="Center"
                          Text="{Binding EndPoint.Y}" />
                 <Separator />
                 <TextBlock VerticalAlignment="Center"
                            Text="Width :" />
-                <TextBox Width="15"
+                <TextBox MinWidth="15"
                          HorizontalContentAlignment="Center"
                          Text="{Binding X}" />
                 <TextBlock VerticalAlignment="Center"
                            Text="Height :" />
-                <TextBox Width="15"
+                <TextBox MinWidth="15"
                          HorizontalContentAlignment="Center"
                          Text="{Binding Y}" />
                 <Separator />
                 <TextBlock VerticalAlignment="Center"
                            Text="Use Diagonal :" />
                 <ToggleButton IsChecked="{Binding IsDiagonalEnabled}" />
+                <Separator />
+                <TextBlock VerticalAlignment="Center"
+                           Text="Tile Size :" />
+                <ListBox SelectedValue="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                         SelectedValuePath="Content"
+                         Style="{StaticResource MaterialDesignToolToggleListBox}">
+                    <ListBoxItem Content="8" />
+                    <ListBoxItem Content="16" />
+                    <ListBoxItem Content="20" />
+                    <ListBoxItem Content="32" />
+                    <ListBoxItem Content="64" />
+                </ListBox>
 
             </ToolBar>
             <ToolBar Band="1">
@@ -117,52 +132,52 @@
         <Expander Grid.Row="1">
             <DataGrid ItemsSource="{Binding PathScore}" />
         </Expander>
-        <ItemsControl Grid.Row="2"
+        <ScrollViewer Grid.Row="2"
                       Margin="10"
-                      ItemsSource="{Binding Nodes}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemContainerStyle>
-                <Style TargetType="ContentPresenter">
-                    <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
-                    <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
-                </Style>
-            </ItemsControl.ItemContainerStyle>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Image Width="20"
-                               Height="20"
-                               Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
-                               Stretch="UniformToFill"
-                               ToolTip="{Binding ToolTip}" />
-
-                        <Image Width="20"
-                               Height="20"
-                               Opacity="0.2"
-                               Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
-                               ToolTip="{Binding ToolTip}" />
-
-                        <!--<mD:PackIcon HorizontalAlignment="Center"
+                      HorizontalScrollBarVisibility="Auto">
+            <Grid>
+                <ItemsControl ItemsSource="{Binding Nodes}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas Width="8000"
+                                    Height="8000" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="{x:Type ContentPresenter}">
+                            <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                            <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                       Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                       Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
+                                       Stretch="UniformToFill"
+                                       ToolTip="{Binding ToolTip}" />
+                                <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                       Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                       Opacity="0.2"
+                                       Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
+                                       ToolTip="{Binding ToolTip}" />
+                                <!--<mD:PackIcon HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
                                      Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
                                      Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
-                                     Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}"
-                                      />-->
+                                     Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}" />-->
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Canvas>
 
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <Canvas Grid.Row="2"
-                Margin="10">
-
-            <Path Data="{Binding PathData}"
-                  Stroke="Black"
-                  StrokeThickness="4" />
-        </Canvas>
+                    <Path Data="{Binding PathData}"
+                          Stroke="Black"
+                          StrokeThickness="4" />
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>
