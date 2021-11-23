@@ -72,7 +72,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
         AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(), CanMaze);
         RemoveMazeCommand = new DelegateCommand(async () => await RemoveMazeAsync(), CanMaze);
         SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanMaze);
-        LoadCommand = new DelegateCommand(async () => await LoadAsync(), CanMaze);
+        LoadCommand = new DelegateCommand(async () => await LoadAsync());
         NodeMap = new Node[X, Y];
         // BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
         BindingOperations.EnableCollectionSynchronization(PathScore, _PathScorelock);
@@ -105,9 +105,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 Nodes.Clear();
             });
-
-            await GetNeighborsAsync();
-            await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
 
             await GetNodesAsync();
         });
@@ -503,6 +500,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     private async Task WallToRoadAsync()
     {
+        await GetNeighborsAsync();
         await SetNodeSides();
         await Task.Run(async () =>
         {
