@@ -140,7 +140,8 @@
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Canvas Width="8000"
-                                    Height="8000" />
+                                    Height="8000"
+                                    CacheMode="BitmapCache" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemContainerStyle>
@@ -154,11 +155,13 @@
                             <Grid>
                                 <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                        Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                       CacheMode="BitmapCache"
                                        Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
                                        Stretch="UniformToFill"
                                        ToolTip="{Binding ToolTip}" />
                                 <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                        Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                       CacheMode="BitmapCache"
                                        Opacity="0.2"
                                        Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
                                        ToolTip="{Binding ToolTip}" />
@@ -171,9 +174,10 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Canvas>
+                <Canvas CacheMode="BitmapCache">
 
-                    <Path Data="{Binding PathData}"
+                    <Path CacheMode="BitmapCache"
+                          Data="{Binding PathData}"
                           Stroke="Black"
                           StrokeThickness="4" />
                 </Canvas>

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using static WPF.StaticValues;
@@ -55,9 +56,12 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public int Delay { get; set; } = 20;
     public Random Random = new();
 
-    //private readonly object _Nodeslock = new();
+    private readonly object _Nodeslock = new();
     private readonly object _PathScorelock = new();
-
+    private TimeSpan TimeSpan { get; set; }
+    private TimeSpan ExcludedTime { get; set; }
+    private TimeSpan TotalDelay { get; set; }
+    private Stopwatch Watch;
     public bool IsWeatherEnabled { get; set; }
     public bool IsMazeEnabled { get; set; }
 
@@ -75,7 +79,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
         SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanMaze);
         LoadCommand = new DelegateCommand(async () => await LoadAsync());
         NodeMap = new Node[X, Y];
-        // BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
+        BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
         BindingOperations.EnableCollectionSynchronization(PathScore, _PathScorelock);
     }
 
@@ -102,11 +106,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             PathData = "";
             OpenSet.Clear();
             CloseSet.Clear();
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                Nodes.Clear();
-            });
-
+            Nodes = new();
             await GetNodesAsync();
         });
     }
@@ -143,7 +143,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
             PathData = "";
             OpenSet.Clear();
             CloseSet.Clear();
-
+            ExcludedTime = TimeSpan.FromTicks(0);
+            TotalDelay = TimeSpan.FromTicks(0);
+            Watch = new();
+            Watch.Start();
             // The set of discovered nodes that may need to be (re-)expanded.
             // Initially, only the start node is known.
             // This is usually implemented as a min-heap or priority queue rather than a hash-set.
@@ -159,6 +162,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 {
                     await FindPathAsync();
                     await CheckOpenSetCloseSetPathAsync();
+                    Watch.Stop();
+                    TimeSpan = Watch.Elapsed - ExcludedTime - TotalDelay;
                     await CalculatePathValueAsync();
                     return;
                 }
@@ -186,10 +191,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
                         OpenSet.Add(neighbor);
                     }
-                    await FindPathAsync();
                     await CheckOpenSetCloseSetPathAsync();
-                    await Task.Delay(Delay);
+                    await FindPathAsync();
                 }
+                TotalDelay += TimeSpan.FromMilliseconds(Delay);
+                await Task.Delay(Delay);
             }
         });
     }
@@ -309,6 +315,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
+            var watch = new Stopwatch();
+            watch.Start();
+
             Path.Clear();
             PathData = "";
             Node? temp = Current;
@@ -320,6 +329,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 Path.Add(temp.CameFrom);
                 temp = temp.CameFrom;
             }
+
+            watch.Stop();
+            ExcludedTime += watch.Elapsed;
         });
     }
 
@@ -336,6 +348,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             pathScore.Length = Path.Count;
             pathScore.Score = score;
             pathScore.Visited = CloseSet.Count;
+            pathScore.Time = TimeSpan;
             PathScore.Add(pathScore);
         });
     }
@@ -698,6 +711,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
+            var watch = new Stopwatch();
+            watch.Start();
+
             foreach (Node node in NodeMap)
             {
                 if (OpenSet.Contains(node) && node != StartNode && node != GoalNode)
@@ -709,6 +725,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     node.Set = Set.Closed;
                 }
             }
+
+            watch.Stop();
+            ExcludedTime += watch.Elapsed;
         });
     }
 
@@ -744,20 +763,19 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
+            var temp = new ObservableCollection<Node>();
             foreach (var node in NodeMap)
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Nodes.Add(node);
-                    OnPropertyChanged(nameof(Nodes));
-                });
+                temp.Add(node);
             }
+            Nodes = temp;
         });
     }
 
     #endregion Visualization Code Section
 
     #region Load/Save NodeMap
+
     private async Task LoadAsync()
     {
         OpenFileDialog openFileDialog = new();
@@ -817,5 +835,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
-    #endregion
+
+    #endregion Load/Save NodeMap
 }
