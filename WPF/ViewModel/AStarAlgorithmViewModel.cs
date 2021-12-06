@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
-using System.Diagnostics;
-using System.IO;
-using System.Windows.Forms;
+﻿using System.Diagnostics;
+using static WPF.DataTransaction;
+using static WPF.MazeManagement;
 using static WPF.StaticValues;
+using static WPF.StreetManagement;
+using static WPF.WeatherCondition;
 
 namespace WPF.ViewModel;
 //https://en.wikipedia.org/wiki/A*_search_algorithm
@@ -10,7 +11,7 @@ namespace WPF.ViewModel;
 
 public class AStarAlgorithmViewModel : BaseViewModel
 {
-    #region Algorithem Constants
+    #region Algorithem Constructors
 
     public int X { get; set; } = 69;
     public int Y { get; set; } = 29;
@@ -18,66 +19,67 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public List<Node> OpenSet { get; set; } = new();
     public List<Node> CloseSet { get; set; } = new();
     public List<Node> Path { get; set; } = new();
-    public string PathData { get; set; }
     public Node StartNode { get; set; } = new();
     public Node GoalNode { get; set; } = new();
     public Node Current { get; set; } = new();
     public bool IsDiagonalEnabled { get; set; }
+    public string PathData { get; set; } = string.Empty;
 
-    #endregion Algorithem Constants
+    #endregion Algorithem Constructors
 
-    #region Visualization Constants
+    #region Visualization Constructors
 
     public DelegateCommand StartCommand { get; set; }
-
-    private bool CanStart() => NodeMap[0, 0] != null;
-
     public DelegateCommand CalculateCommand { get; set; }
     public DelegateCommand WallToRoadCommand { get; set; }
-
-    private bool CanRoad() => NodeMap[0, 0] != null && NodeMap[0, 0].IsObstacle == true;
-
     public DelegateCommand SetConditionCommand { get; set; }
     public DelegateCommand RemoveConditionCommand { get; set; }
-
-    private bool CanCondition() => NodeMap[0, 0] != null;
-
     public DelegateCommand AddMazeCommand { get; set; }
     public DelegateCommand RemoveMazeCommand { get; set; }
     public DelegateCommand SaveCommand { get; set; }
     public DelegateCommand LoadCommand { get; set; }
 
+    //public DelegateCommand GetNodeAxis { get; set; }
     private bool CanMaze() => NodeMap[0, 0] != null;
+
+    private bool CanCondition() => NodeMap[0, 0] != null;
+
+    private bool CanStart() => NodeMap[0, 0] != null;
 
     public ObservableCollection<Node> Nodes { get; set; } = new();
     public ObservableCollection<PathScore> PathScore { get; set; } = new();
     public Point StartPoint { get; set; } = new();
     public Point EndPoint { get; set; } = new();
     public int Delay { get; set; } = 20;
-    public Random Random = new();
-
-    private readonly object _Nodeslock = new();
-    private readonly object _PathScorelock = new();
     private TimeSpan TimeSpan { get; set; }
     private TimeSpan ExcludedTime { get; set; }
     private TimeSpan TotalDelay { get; set; }
-    private Stopwatch Watch;
-    public bool IsWeatherEnabled { get; set; }
-    public bool IsMazeEnabled { get; set; }
+    private Stopwatch Watch = new();
+    private readonly object _Nodeslock = new();
+    private readonly object _PathScorelock = new();
 
-    #endregion Visualization Constants
+    #endregion Visualization Constructors
 
     public AStarAlgorithmViewModel()
     {
         StartCommand = new DelegateCommand(async () => await StartAsync(), CanStart);
         CalculateCommand = new DelegateCommand(async () => await CalculateNodesAsync());
-        WallToRoadCommand = new DelegateCommand(async () => await WallToRoadAsync(), CanRoad);
-        SetConditionCommand = new DelegateCommand(async () => await AddWeatherConditionAsync(), CanCondition);
-        RemoveConditionCommand = new DelegateCommand(async () => await RemoveWeatherConditionAsync(), CanCondition);
-        AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(), CanMaze);
-        RemoveMazeCommand = new DelegateCommand(async () => await RemoveMazeAsync(), CanMaze);
-        SaveCommand = new DelegateCommand(async () => await SaveAsync(), CanMaze);
-        LoadCommand = new DelegateCommand(async () => await LoadAsync());
+
+        WallToRoadCommand = new DelegateCommand(async () => await AddStreetAsync(X, Y, NodeMap), CanMaze);
+
+        SetConditionCommand = new DelegateCommand(async () => NodeMap = await AddWeatherConditionAsync(NodeMap), CanCondition);
+        RemoveConditionCommand = new DelegateCommand(async () => await RemoveWeatherConditionAsync(NodeMap), CanCondition);
+
+        AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(X, Y, NodeMap), CanMaze);
+        RemoveMazeCommand = new DelegateCommand(async () => await RemoveMazeAsync(NodeMap), CanMaze);
+
+        SaveCommand = new DelegateCommand(async () => await SaveAsync(NodeMap), CanMaze);
+        LoadCommand = new DelegateCommand(async () =>
+        {
+            NodeMap = await LoadAsync();
+            await GetNodesAsync();
+        });
+        //GetNodeAxis = new DelegateCommand(async () => await GetAxisAsync());
         NodeMap = new Node[X, Y];
         BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
         BindingOperations.EnableCollectionSynchronization(PathScore, _PathScorelock);
@@ -204,54 +206,54 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            for (int i = 0; i < X; i++)
+            Parallel.For(0, X, i =>
             {
-                for (int j = 0; j < Y; j++)
-                {
-                    if (i < X - 1)
+                Parallel.For(0, Y, j =>
                     {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j]);
-                    }
-
-                    if (i > 0)
-                    {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j]);
-                    }
-
-                    if (j < Y - 1)
-                    {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i, j + 1]);
-                    }
-
-                    if (j > 0)
-                    {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i, j - 1]);
-                    }
-                    if (IsDiagonalEnabled)
-                    {
-                        // diagonal Pathfinding
-                        if (i > 0 && j > 0)
+                        if (i < X - 1)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j - 1]);
+                            NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j]);
                         }
 
-                        if (i < X - 1 && j > 0)
+                        if (i > 0)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j - 1]);
+                            NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j]);
                         }
 
-                        if (i > 0 && j < Y - 1)
+                        if (j < Y - 1)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j + 1]);
+                            NodeMap[i, j].Neighbors.Add(NodeMap[i, j + 1]);
                         }
 
-                        if (i < X - 1 && j < Y - 1)
+                        if (j > 0)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j + 1]);
+                            NodeMap[i, j].Neighbors.Add(NodeMap[i, j - 1]);
                         }
-                    }
-                }
-            }
+                        if (IsDiagonalEnabled)
+                        {
+                            // diagonal Pathfinding
+                            if (i > 0 && j > 0)
+                            {
+                                NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j - 1]);
+                            }
+
+                            if (i < X - 1 && j > 0)
+                            {
+                                NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j - 1]);
+                            }
+
+                            if (i > 0 && j < Y - 1)
+                            {
+                                NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j + 1]);
+                            }
+
+                            if (i < X - 1 && j < Y - 1)
+                            {
+                                NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j + 1]);
+                            }
+                        }
+                    });
+            });
         });
     }
 
@@ -272,7 +274,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(async () =>
         {
-            foreach (Node node in NodeMap)
+            foreach (var node in NodeMap)
             {   //TODO: Find the Correct Spot To add the Weight to the Nodes
                 node.H = await ManhattanDistance(node, GoalNode) + (double)node.Condition;
             }
@@ -341,10 +343,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
         {
             PathScore pathScore = new();
             var score = 0.0;
-            foreach (var node in Path)
+
+            Parallel.ForEach(Path, node =>
             {
                 score += node.F;
-            }
+            });
             pathScore.Length = Path.Count;
             pathScore.Score = score;
             pathScore.Visited = CloseSet.Count;
@@ -354,356 +357,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
     }
 
     #endregion A* search algorithm Code Section
-
-    #region WeatherConditions Code Section
-
-    private async Task AddWeatherConditionAsync()
-    {
-        await Task.Run(async () =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (!node.IsObstacle && !node.IsRoad)
-                {
-                    node.Condition = await RandomEnumValue();
-                }
-            }
-            await GetNodesAsync();
-        });
-    }
-
-    private async Task RemoveWeatherConditionAsync()
-    {
-        await Task.Run(async () =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (!node.IsObstacle && !node.IsRoad)
-                {
-                    node.Condition = Enum.ExtraCondition.Clear;
-                }
-            }
-            await GetNodesAsync();
-        });
-    }
-
-    private static async Task<ExtraCondition> RandomEnumValue()
-    {
-        Dictionary<ExtraCondition, float> condition = new();
-        condition.Add(ExtraCondition.Sunny, 0.8f);
-        condition.Add(ExtraCondition.Cloudy, 0.3f);
-        condition.Add(ExtraCondition.Hail, 0.2f);
-        condition.Add(ExtraCondition.Rainy, 0.3f);
-        condition.Add(ExtraCondition.HeavyRain, 0.2f);
-        condition.Add(ExtraCondition.Lightning, 0.1f);
-        condition.Add(ExtraCondition.LightningRainy, 0.1f);
-        await Task.Delay(0);
-        return condition.RandomElementByWeight(e => e.Value).Key;
-    }
-
-    #endregion WeatherConditions Code Section
-
-    #region Maze Code Section
-
-    private async Task AddMazeOuterWallsAsync()
-    {
-        await Task.Run(() =>
-        {
-            for (int i = 0; i < X; ++i)
-            {
-                if (i == 0 || i == X - 1)
-                {
-                    for (int j = 0; j < Y; ++j)
-                    {
-                        NodeMap[i, j].Style = Enum.AStarSet.Maze;
-                        NodeMap[i, j].IsObstacle = true;
-                        NodeMap[i, j].Condition = Enum.ExtraCondition.Clear;
-                    }
-                }
-                else
-                {
-                    NodeMap[i, 0].Style = Enum.AStarSet.Maze;
-                    NodeMap[i, 0].IsObstacle = true;
-                    NodeMap[i, 0].Condition = Enum.ExtraCondition.Clear;
-                    NodeMap[i, Y - 1].Style = Enum.AStarSet.Maze;
-                    NodeMap[i, Y - 1].IsObstacle = true;
-                    NodeMap[i, Y - 1].Condition = Enum.ExtraCondition.Clear;
-                }
-            }
-        });
-    }
-
-    private async Task AddMazeInnerWallsAsync(bool h, int minX, int maxX, int minY, int maxY, Point gate)
-    {
-        await Task.Run(async () =>
-        {
-            if (h)
-            {
-                if (maxX - minX < 2)
-                {
-                    return;
-                }
-                var y = Math.Floor(await RandomNumberAsync(minY, maxY) / 2) * 2;
-                await Task.WhenAll(AddHWallAsync(minX, maxX, (int)y),
-                                   AddMazeInnerWallsAsync(!h, minX, maxX, minY, (int)y - 1, gate),
-                                   AddMazeInnerWallsAsync(!h, minX, maxX, (int)y + 1, maxY, gate));
-            }
-            else
-            {
-                if (maxY - minY < 2)
-                {
-                    return;
-                }
-                var x = Math.Floor(await RandomNumberAsync(minX, maxX) / 2) * 2;
-                await Task.WhenAll(AddVWallAsync(minY, maxY, (int)x),
-                                   AddMazeInnerWallsAsync(!h, minX, (int)x - 1, minY, maxY, gate),
-                                   AddMazeInnerWallsAsync(!h, (int)x + 1, maxX, minY, maxY, gate));
-            }
-        });
-    }
-
-    private async Task AddVWallAsync(int minY, int maxY, int x)
-    {
-        await Task.Run(async () =>
-        {
-            decimal hole = (Math.Floor(await RandomNumberAsync(minY, maxY) / 2) * 2) + 1;
-            for (int i = minY; i <= maxY; ++i)
-            {
-                if (i == hole)
-                {
-                    NodeMap[i, x].Style = Enum.AStarSet.Undefined;
-                    NodeMap[i, x].IsObstacle = false;
-                }
-                else
-                {
-                    NodeMap[i, x].Style = Enum.AStarSet.Maze;
-                    NodeMap[i, x].IsObstacle = true;
-                    NodeMap[i, x].Condition = Enum.ExtraCondition.Clear;
-                }
-            }
-        });
-    }
-
-    private async Task AddHWallAsync(int minX, int maxX, int y)
-    {
-        await Task.Run(async () =>
-        {
-            decimal hole = (Math.Floor(await RandomNumberAsync(minX, maxX) / 2) * 2) + 1;
-            for (int i = minX; i <= maxX; ++i)
-            {
-                if (i == hole)
-                {
-                    NodeMap[y, i].Style = Enum.AStarSet.Undefined;
-                    NodeMap[y, i].IsObstacle = false;
-                }
-                else
-                {
-                    NodeMap[y, i].Style = Enum.AStarSet.Maze;
-                    NodeMap[y, i].IsObstacle = true;
-                    NodeMap[y, i].Condition = Enum.ExtraCondition.Clear;
-                }
-            }
-        });
-    }
-
-    private static async ValueTask<decimal> RandomNumberAsync(int min, int max)
-    {
-        Random? rnd = new();
-        return await new ValueTask<decimal>((decimal)Math.Floor((rnd.NextDouble() * (max - min + 1)) + min));
-    }
-
-    private async Task WallToRoadAsync()
-    {
-        await GetNeighborsAsync();
-        await SetNodeSides();
-        await Task.Run(async () =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (node.IsObstacle)
-                {
-                    node.IsObstacle = false;
-                    node.IsRoad = true;
-
-                    node.Condition = ExtraCondition.Road;
-
-                    #region Street Tiles
-
-                    if (node.Left && node.Right && !node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadH;
-                    }
-                    if (!node.Left && !node.Right && node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadV;
-                    }
-
-                    //1 Sides
-                    if (!node.Left && !node.Right && node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadT;
-                    }
-                    if (!node.Left && !node.Right && !node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadB;
-                    }
-                    if (node.Left && !node.Right && !node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadL;
-                    }
-                    if (!node.Left && node.Right && !node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadR;
-                    }
-
-                    //2 Sides
-                    if (node.Left && !node.Right && node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadTL;
-                    }
-                    if (!node.Left && node.Right && node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadTR;
-                    }
-                    if (node.Left && !node.Right && !node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadBL;
-                    }
-                    if (!node.Left && node.Right && !node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadBR;
-                    }
-
-                    //3 Sides
-                    if (node.Left && node.Right && !node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadBLF;
-                    }
-                    if (node.Left && !node.Right && node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadTBL;
-                    }
-                    if (!node.Left && node.Right && node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadTBR;
-                    }
-                    if (node.Left && node.Right && node.Top && !node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadTLR;
-                    }
-
-                    //4 Sides
-                    if (node.Left && node.Right && node.Top && node.Bottom)
-                    {
-                        node.Style = AStarSet.RoadTBLR;
-                    }
-
-                    #endregion Street Tiles
-                }
-                else
-                {
-                    if (node.Style != AStarSet.Start && node.Style != AStarSet.End)
-                    {
-                        if (Random.Next(100) < 60)
-                        {
-                            node.IsObstacle = true;
-                            node.Style = AStarSet.Obstacle;
-                        }
-                    }
-                }
-            }
-
-            //Set Border Back To Walls
-            for (int i = 0; i < X; ++i)
-            {
-                if (i == 0 || i == X - 1)
-                {
-                    for (int j = 0; j < Y; ++j)
-                    {
-                        NodeMap[i, j].Style = AStarSet.RiverV;
-                        NodeMap[i, j].IsObstacle = true;
-                        NodeMap[i, j].Condition = ExtraCondition.Clear;
-                    }
-                }
-                else
-                {
-                    NodeMap[i, 0].Style = AStarSet.RiverH;
-                    NodeMap[i, 0].IsObstacle = true;
-                    NodeMap[i, 0].Condition = ExtraCondition.Clear;
-                    NodeMap[i, Y - 1].Style = AStarSet.RiverH;
-                    NodeMap[i, Y - 1].IsObstacle = true;
-                    NodeMap[i, Y - 1].Condition = ExtraCondition.Clear;
-                }
-
-                NodeMap[0, 0].Style = AStarSet.RiverBR;
-                NodeMap[X - 1, 0].Style = AStarSet.RiverBL;
-                NodeMap[0, Y - 1].Style = AStarSet.RiverTR;
-                NodeMap[X - 1, Y - 1].Style = AStarSet.RiverTL;
-            }
-
-            await GetNodesAsync();
-        });
-    }
-
-    private async Task SetNodeSides()
-    {
-        await Task.Run(() =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (node.IsObstacle)
-                {
-                    foreach (var side in node.Neighbors)
-                    {
-                        if (side.X + 1 == node.X && side.Y == node.Y && side.IsObstacle)
-                        {
-                            node.Left = true;
-                        }
-
-                        if (side.X == node.X + 1 && side.Y == node.Y && side.IsObstacle)
-                        {
-                            node.Right = true;
-                        }
-
-                        if (side.X == node.X && side.Y == node.Y + 1 && side.IsObstacle)
-                        {
-                            node.Bottom = true;
-                        }
-
-                        if (side.X == node.X && side.Y + 1 == node.Y && side.IsObstacle)
-                        {
-                            node.Top = true;
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    private async Task AddMazeAsync()
-    {
-        await Task.WhenAll(AddMazeOuterWallsAsync(), AddMazeInnerWallsAsync(true, 1, Y - 2, 1, X - 2, new Point(X - 2, Y - 2)));
-        await GetNodesAsync();
-    }
-
-    private async Task RemoveMazeAsync()
-    {
-        await Task.Run(async () =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (node.IsObstacle || node.IsRoad)
-                {
-                    node.Style = Enum.AStarSet.Undefined;
-                    node.IsObstacle = false;
-                    node.IsRoad = false;
-                }
-            }
-            await GetNodesAsync();
-        });
-    }
-
-    #endregion Maze Code Section
 
     #region Visualization Code Section
 
@@ -773,68 +426,4 @@ public class AStarAlgorithmViewModel : BaseViewModel
     }
 
     #endregion Visualization Code Section
-
-    #region Load/Save NodeMap
-
-    private async Task LoadAsync()
-    {
-        OpenFileDialog openFileDialog = new();
-        openFileDialog.InitialDirectory = System.Windows.Forms.Application.StartupPath;
-        openFileDialog.Title = "Load Json Files";
-        openFileDialog.CheckFileExists = true;
-        openFileDialog.CheckPathExists = true;
-        openFileDialog.DefaultExt = "Json";
-        openFileDialog.Filter = "Json files (*.Json)|*.json|All files (*.*)|*.*";
-        openFileDialog.FilterIndex = 1;
-        openFileDialog.RestoreDirectory = true;
-
-        string openPath = "";
-
-        if (openFileDialog.ShowDialog() == DialogResult.OK)
-        {
-            openPath = openFileDialog.FileName;
-        }
-        await Task.Run(async () =>
-        {
-            if (openPath != "")
-            {
-                using StreamReader r = new(openPath);
-                string json = r.ReadToEnd();
-                Node[,] items = JsonConvert.DeserializeObject<Node[,]>(json);
-                X = items.GetLength(0);
-                Y = items.GetLength(1);
-                NodeMap = new Node[X, Y];
-                NodeMap = items;
-
-                await GetNodesAsync();
-            }
-        });
-    }
-
-    private async Task SaveAsync()
-    {
-        SaveFileDialog saveFileDialog = new();
-        saveFileDialog.InitialDirectory = System.Windows.Forms.Application.StartupPath;
-        saveFileDialog.Title = "Save Json Files";
-        saveFileDialog.CheckPathExists = true;
-        saveFileDialog.DefaultExt = "Json";
-        saveFileDialog.Filter = "Json files (*.Json)|*.json|All files (*.*)|*.*";
-        saveFileDialog.FilterIndex = 1;
-        saveFileDialog.RestoreDirectory = true;
-        string savePath = "";
-        if (saveFileDialog.ShowDialog() == DialogResult.OK)
-        {
-            savePath = saveFileDialog.FileName;
-        }
-        await Task.Run(() =>
-        {
-            if (savePath != "")
-            {
-                var json = JsonConvert.SerializeObject(NodeMap);
-                File.WriteAllText($"{savePath}", json);
-            }
-        });
-    }
-
-    #endregion Load/Save NodeMap
 }

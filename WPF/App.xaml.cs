@@ -5,36 +5,27 @@
 /// </summary>
 public partial class App : Application
 {
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override void OnStartup(StartupEventArgs e)
     {
-
         base.OnStartup(e);
 
         // Setup the main application
-        await ApplicationSetupAsync();
+        // await ApplicationSetupAsync();
 
-        try
-        {
-            Current.MainWindow = new MainWindow();
-            Current.MainWindow.Show();
-        }
-        catch (Exception ex)
-        {
-            //Logger.LogInformationSource($"{ex.Message} : {ex.StackTrace}");
-        }
+        Current.MainWindow = new MainWindow();
+        Current.MainWindow.Show();
     }
 
-    private async Task ApplicationSetupAsync()
-    {
-        // Setup the Dna Framework
-        //Framework.Construct<DefaultFrameworkConstruction>()
-        //    .AddFileLogger()
-        //    .AddViewModels()
-        //    .AddClientServices()
-        //    .AddSQLClientServices()
-        //    .Build();
+    //private async Task ApplicationSetupAsync()
+    //{
+    //    // Setup the Dna Framework
+    //    //Framework.Construct<DefaultFrameworkConstruction>()
+    //    //    .AddFileLogger()
+    //    //    .AddViewModels()
+    //    //    .AddClientServices()
+    //    //    .AddSQLClientServices()
+    //    //    .Build();
 
-        await Task.Delay(1);
-    }
-
+    //    await Task.Delay(1);
+    //}
 }
