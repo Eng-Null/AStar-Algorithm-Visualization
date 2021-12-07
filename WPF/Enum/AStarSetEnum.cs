@@ -9,8 +9,9 @@ public enum AStarSet
     Obstacle = 6,
     Maze = 7,
 
-//Road Tiles
+    //Road Tiles
     RoadH = 12,
+
     RoadV = 13,
 
     RoadTL = 14,
@@ -30,8 +31,9 @@ public enum AStarSet
     RoadL = 25,
     RoadR = 26,
 
-//River Tiles
+    //River Tiles
     RiverH = 27,
+
     RiverV = 28,
 
     RiverTL = 29,

@@ -1,5 +1,6 @@
 ﻿namespace WPF.Extensions;
 
+//https://stackoverflow.com/a/11930875/7479967
 public static class IEnumerableExtensions
 {
     public static T RandomElementByWeight<T>(this IEnumerable<T> sequence, Func<T, float> weightSelector)

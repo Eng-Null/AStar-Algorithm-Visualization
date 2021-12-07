@@ -42,10 +42,10 @@ public class SetToBlockValueConverter : BaseValueConverter<SetToBlockValueConver
             AStarSet.RiverTR => $"/Img/TopRightRiver.png",
             AStarSet.RiverBL => $"/Img/BottomLeftRiver.png",
             AStarSet.RiverBR => $"/Img/BottomRightRiver.png",
-            _ => null,
+            _ => "",
         };
     }
-    private string GetRandomObstacle()
+    private static string GetRandomObstacle()
     {
         Dictionary<string, float> condition = new();
         for (int i = 1; i <= 15; i++)
@@ -59,28 +59,6 @@ public class SetToBlockValueConverter : BaseValueConverter<SetToBlockValueConver
 
         return condition.RandomElementByWeight(e => e.Value).Key;
     }
-
-    //private static string GetRandomObstacle()
-    //{
-    //    var rnd = new Random();
-    //    return rnd.Next(11) switch
-    //    {
-    //        0 => $"/Img/Tree{rnd}.png",
-    //        1 => $"/Img/Tree{rnd}.png",
-    //        2 => $"/Img/Tree{rnd}.png",
-    //        3 => $"/Img/Tree{rnd}.png",
-    //        4 => $"/Img/Tree{rnd}.png",
-    //        5 => $"/Img/Tree{rnd}.png",
-    //        6 => $"/Img/Tree{rnd}.png",
-
-    //        7 => $"/Img/House1.png",
-    //        8 => $"/Img/House2.png",
-    //        9 => $"/Img/House3.png",
-    //        10 => $"/Img/House4.png",
-    //        11 => $"/Img/House5.png",
-    //        _ => null,
-    //    };
-    //}
 
     public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {

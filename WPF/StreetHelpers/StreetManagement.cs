@@ -3,19 +3,25 @@
 public static class StreetManagement
 {
     private static readonly Random Random = new();
+    private static Node[,] NodeMap { get; set; }
+    private static int X;
+    private static int Y;
 
-    public static async Task<Node[,]> AddStreetAsync(int X, int Y, Node[,] NodeMap)
+    public static async Task<Node[,]> AddStreetAsync(int x, int y, Node[,] nodeMap)
     {
-        NodeMap = await AddStreetOuterWallsAsync(X, Y, NodeMap);
-        await AddStreetInnerWallsAsync(true, 1, Y - 2, 1, X - 2, new Point(X - 2, Y - 2), NodeMap);
-        await WallToRoadAsync(X, Y, NodeMap);
+        NodeMap = nodeMap;
+        X = x;
+        Y = y;
+        NodeMap = await AddStreetOuterWallsAsync();
+        await AddStreetInnerWallsAsync(true, 1, Y - 2, 1, X - 2, new Point(X - 2, Y - 2));
+        await WallToRoadAsync();
         return NodeMap;
     }
 
-    private static async Task WallToRoadAsync(int X, int Y, Node[,] NodeMap)
+    private static async Task WallToRoadAsync()
     {
-        await GetNeighborsAsync(X, Y, NodeMap);
-        await SetNodeSides(NodeMap);
+        await GetNeighborsAsync();
+        await SetNodeSides();
         await Task.Run(() =>
         {
             foreach (var node in NodeMap)
@@ -99,16 +105,16 @@ public static class StreetManagement
                     }
 
                     #endregion Street Tiles
+
+                    continue;
                 }
-                else
+
+                if (node.Style != AStarSet.Start && node.Style != AStarSet.End)
                 {
-                    if (node.Style != AStarSet.Start && node.Style != AStarSet.End)
+                    if (Random.Next(100) < 80)
                     {
-                        if (Random.Next(100) < 60)
-                        {
-                            node.IsObstacle = true;
-                            node.Style = AStarSet.Obstacle;
-                        }
+                        node.IsObstacle = true;
+                        node.Style = AStarSet.Obstacle;
                     }
                 }
             }
@@ -124,26 +130,25 @@ public static class StreetManagement
                         NodeMap[i, j].IsObstacle = true;
                         NodeMap[i, j].Condition = ExtraCondition.Clear;
                     });
-                }
-                else
-                {
-                    NodeMap[i, 0].Style = AStarSet.RiverH;
-                    NodeMap[i, 0].IsObstacle = true;
-                    NodeMap[i, 0].Condition = ExtraCondition.Clear;
-                    NodeMap[i, Y - 1].Style = AStarSet.RiverH;
-                    NodeMap[i, Y - 1].IsObstacle = true;
-                    NodeMap[i, Y - 1].Condition = ExtraCondition.Clear;
+                    return;
                 }
 
-                NodeMap[0, 0].Style = AStarSet.RiverBR;
-                NodeMap[X - 1, 0].Style = AStarSet.RiverBL;
-                NodeMap[0, Y - 1].Style = AStarSet.RiverTR;
-                NodeMap[X - 1, Y - 1].Style = AStarSet.RiverTL;
+                NodeMap[i, 0].Style = AStarSet.RiverH;
+                NodeMap[i, 0].IsObstacle = true;
+                NodeMap[i, 0].Condition = ExtraCondition.Clear;
+                NodeMap[i, Y - 1].Style = AStarSet.RiverH;
+                NodeMap[i, Y - 1].IsObstacle = true;
+                NodeMap[i, Y - 1].Condition = ExtraCondition.Clear;
             });
+
+            NodeMap[0, 0].Style = AStarSet.RiverBR;
+            NodeMap[X - 1, 0].Style = AStarSet.RiverBL;
+            NodeMap[0, Y - 1].Style = AStarSet.RiverTR;
+            NodeMap[X - 1, Y - 1].Style = AStarSet.RiverTL;
         });
     }
 
-    private static async Task GetNeighborsAsync(int X, int Y, Node[,] NodeMap)
+    private static async Task GetNeighborsAsync()
     {
         await Task.Run(() =>
         {
@@ -175,7 +180,7 @@ public static class StreetManagement
         });
     }
 
-    private static async Task SetNodeSides(Node[,] NodeMap)
+    private static async Task SetNodeSides()
     {
         await Task.Run(() =>
         {
@@ -210,7 +215,7 @@ public static class StreetManagement
         });
     }
 
-    private static async Task<Node[,]> AddStreetOuterWallsAsync(int X, int Y, Node[,] NodeMap)
+    private static async Task<Node[,]> AddStreetOuterWallsAsync()
     {
         return await Task.Run(() =>
         {
@@ -239,7 +244,7 @@ public static class StreetManagement
         });
     }
 
-    private static async Task AddStreetInnerWallsAsync(bool h, int minX, int maxX, int minY, int maxY, Point gate, Node[,] NodeMap)
+    private static async Task AddStreetInnerWallsAsync(bool h, int minX, int maxX, int minY, int maxY, Point gate)
     {
         await Task.Run(async () =>
         {
@@ -250,25 +255,23 @@ public static class StreetManagement
                     return;
                 }
                 var y = Math.Floor(await RandomNumberAsync(minY, maxY) / 2) * 2;
-                await Task.WhenAll(AddHWallAsync(minX, maxX, (int)y, NodeMap),
-                                   AddStreetInnerWallsAsync(!h, minX, maxX, minY, (int)y - 1, gate, NodeMap),
-                                   AddStreetInnerWallsAsync(!h, minX, maxX, (int)y + 1, maxY, gate, NodeMap));
+                await Task.WhenAll(AddHWallAsync(minX, maxX, (int)y),
+                                   AddStreetInnerWallsAsync(!h, minX, maxX, minY, (int)y - 1, gate),
+                                   AddStreetInnerWallsAsync(!h, minX, maxX, (int)y + 1, maxY, gate));
+                return;
             }
-            else
+            if (maxY - minY < 2)
             {
-                if (maxY - minY < 2)
-                {
-                    return;
-                }
-                var x = Math.Floor(await RandomNumberAsync(minX, maxX) / 2) * 2;
-                await Task.WhenAll(AddVWallAsync(minY, maxY, (int)x, NodeMap),
-                                   AddStreetInnerWallsAsync(!h, minX, (int)x - 1, minY, maxY, gate, NodeMap),
-                                   AddStreetInnerWallsAsync(!h, (int)x + 1, maxX, minY, maxY, gate, NodeMap));
+                return;
             }
+            var x = Math.Floor(await RandomNumberAsync(minX, maxX) / 2) * 2;
+            await Task.WhenAll(AddVWallAsync(minY, maxY, (int)x),
+                               AddStreetInnerWallsAsync(!h, minX, (int)x - 1, minY, maxY, gate),
+                               AddStreetInnerWallsAsync(!h, (int)x + 1, maxX, minY, maxY, gate));
         });
     }
 
-    private static async Task AddVWallAsync(int minY, int maxY, int x, Node[,] NodeMap)
+    private static async Task AddVWallAsync(int minY, int maxY, int x)
     {
         await Task.Run(() =>
         {
@@ -281,7 +284,7 @@ public static class StreetManagement
         });
     }
 
-    private static async Task AddHWallAsync(int minX, int maxX, int y, Node[,] NodeMap)
+    private static async Task AddHWallAsync(int minX, int maxX, int y)
     {
         await Task.Run(() =>
         {

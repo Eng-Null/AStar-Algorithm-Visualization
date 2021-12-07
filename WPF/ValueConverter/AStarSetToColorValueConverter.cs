@@ -1,6 +1,4 @@
-﻿using System.Windows.Media;
-
-namespace WPF;
+﻿namespace WPF;
 
 public class AStarSetToColorValueConverter : BaseValueConverter<AStarSetToColorValueConverter>
 {

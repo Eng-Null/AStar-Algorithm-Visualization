@@ -117,13 +117,13 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            NodeMap[1, 1].Style = Enum.AStarSet.Start;
+            NodeMap[1, 1].Style = AStarSet.Start;
             NodeMap[1, 1].IsObstacle = false;
-            NodeMap[1, 1].Condition = Enum.ExtraCondition.Clear;
+            NodeMap[1, 1].Condition = ExtraCondition.Road;
 
-            NodeMap[X - 2, Y - 2].Style = Enum.AStarSet.End;
+            NodeMap[X - 2, Y - 2].Style = AStarSet.End;
             NodeMap[X - 2, Y - 2].IsObstacle = false;
-            NodeMap[X - 2, Y - 2].Condition = Enum.ExtraCondition.Clear;
+            NodeMap[X - 2, Y - 2].Condition = ExtraCondition.Road;
 
             StartPoint = new(1, 1);
             EndPoint = new(X - 2, Y - 2);
@@ -177,7 +177,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     {
                         // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
                         // tentative_gScore:= gScore[current] + d(current, neighbor)
-                        var tentativeGScore = Current.G + await MovementCost(neighbor, Current);
+                        var tentativeGScore = Math.Round(Current.G + await MovementCost(neighbor, Current), 2);
                         if (!OpenSet.Contains(neighbor))
                         {
                             OpenSet.Add(neighbor);
@@ -188,7 +188,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                         }
 
                         neighbor.G = tentativeGScore;
-                        neighbor.F = neighbor.G + neighbor.H;
+                        neighbor.F = Math.Round(neighbor.G + neighbor.H, 2);
                         neighbor.CameFrom = Current;
 
                         OpenSet.Add(neighbor);
@@ -276,41 +276,42 @@ public class AStarAlgorithmViewModel : BaseViewModel
         {
             foreach (var node in NodeMap)
             {   //TODO: Find the Correct Spot To add the Weight to the Nodes
-                node.H = await ManhattanDistance(node, GoalNode) + (double)node.Condition;
+                node.H = Math.Round(await ManhattanDistance(node, GoalNode) + (double)node.Condition, 2);
             }
 
             async ValueTask<double> ManhattanDistance(Node node, Node goal)
             {
+                int dx;
+                int dy;
                 if (IsDiagonalEnabled)
                 {
-                    int dx = Math.Abs(node.X - goal.X);
-                    int dy = Math.Abs(node.Y - goal.Y);
-                    return await new ValueTask<double>(D * Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)));
+                    dx = Math.Abs(node.X - goal.X);
+                    dy = Math.Abs(node.Y - goal.Y);
+                    return await new ValueTask<double> (Math.Min(dx,dy) * Math.Sqrt(2) + Math.Abs(dx - dy));
+                    //(Math.Round(D * Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)), 2));
                 }
-                else
-                {
-                    int dx = Math.Abs(node.X - goal.X);
-                    int dy = Math.Abs(node.Y - goal.Y);
-                    return await new ValueTask<double>(dx + dy);
-                }
+
+                dx = Math.Abs(node.X - goal.X);
+                dy = Math.Abs(node.Y - goal.Y);
+                return await new ValueTask<double>(dx + dy);
             }
         });
     }
 
     private async ValueTask<double> MovementCost(Node firstNode, Node secondNode)
     {
+        int dx;
+        int dy;
         if (IsDiagonalEnabled)
         {
-            int dx = Math.Abs(firstNode.X - secondNode.X);
-            int dy = Math.Abs(firstNode.Y - secondNode.Y);
-            return await new ValueTask<double>(Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)));
+            dx = Math.Abs(firstNode.X - secondNode.X);
+            dy = Math.Abs(firstNode.Y - secondNode.Y);
+            return await new ValueTask<double>(Math.Round(Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)), 2));
         }
-        else
-        {
-            int dx = Math.Abs(firstNode.X - secondNode.X);
-            int dy = Math.Abs(firstNode.Y - secondNode.Y);
-            return await new ValueTask<double>(dx - dy);
-        }
+
+        dx = Math.Abs(firstNode.X - secondNode.X);
+        dy = Math.Abs(firstNode.Y - secondNode.Y);
+        return await new ValueTask<double>(dx - dy);
     }
 
     private async Task FindPathAsync()
