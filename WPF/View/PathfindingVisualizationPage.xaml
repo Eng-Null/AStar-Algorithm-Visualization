@@ -28,107 +28,127 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ToolBarTray IsLocked="True">
-            <ToolBar Style="{DynamicResource MaterialDesignToolBar}">
-                <Button Command="{Binding CalculateCommand}"
-                        Content="{mD:PackIcon Kind=Refresh}" />
-                <Button Command="{Binding StartCommand}"
-                        Content="{mD:PackIcon Kind=Play}" />
-                <Separator />
-                <Button Command="{Binding SaveCommand}"
-                        Content="{mD:PackIcon Kind=ContentSave}" />
-                <Button Command="{Binding LoadCommand}"
-                        Content="{mD:PackIcon Kind=OpenInNew}" />
-                <Separator />
-                <Button Command="{Binding SetConditionCommand}"
-                        Content="{mD:PackIcon Kind=WeatherSunnyAlert}" />
-                <Button Command="{Binding RemoveConditionCommand}"
-                        Content="{mD:PackIcon Kind=WeatherSunnyOff}" />
-                <Separator />
-                <Button Command="{Binding AddMazeCommand}"
-                        Content="{mD:PackIcon Kind=PuzzlePlus}" />
-                <Button Command="{Binding RemoveMazeCommand}"
-                        Content="{mD:PackIcon Kind=PuzzleMinus}" />
-                <Separator />
-                <Button Command="{Binding WallToRoadCommand}"
-                        Content="{mD:PackIcon Kind=Road}" />
-                <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Start Point :" />
-                <TextBox MinWidth="15"
-                         HorizontalContentAlignment="Center"
-                         Text="{Binding StartPoint.X}" />
-                <TextBox MinWidth="15"
-                         HorizontalContentAlignment="Center"
-                         Text="{Binding StartPoint.Y}" />
-                <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="End Point :" />
-                <TextBox MinWidth="15"
-                         HorizontalContentAlignment="Center"
-                         Text="{Binding EndPoint.X}" />
-                <TextBox MinWidth="15"
-                         HorizontalContentAlignment="Center"
-                         Text="{Binding EndPoint.Y}" />
-                <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Width :" />
-                <TextBox MinWidth="15"
-                         HorizontalContentAlignment="Center"
-                         Text="{Binding X}" />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Height :" />
-                <TextBox MinWidth="15"
-                         HorizontalContentAlignment="Center"
-                         Text="{Binding Y}" />
-                <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Use Diagonal :" />
-                <ToggleButton IsChecked="{Binding IsDiagonalEnabled}" />
-                <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Tile Size :" />
-                <ListBox SelectedValue="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
-                         SelectedValuePath="Content"
-                         Style="{StaticResource MaterialDesignToolToggleListBox}">
-                    <ListBoxItem Content="8" />
-                    <ListBoxItem Content="16" />
-                    <ListBoxItem Content="20" />
-                    <ListBoxItem Content="32" />
-                    <ListBoxItem Content="64" />
-                </ListBox>
 
-            </ToolBar>
-            <ToolBar Band="1">
-                <TextBlock VerticalAlignment="Center"
-                           Text="Noise Level :" />
-                <Slider Width="400"
-                        VerticalAlignment="Center"
-                        IsSelectionRangeEnabled="True"
-                        Maximum="100"
-                        Minimum="0"
-                        SelectionEnd="30"
-                        SelectionStart="0"
-                        Style="{StaticResource MaterialDesignDiscreteSlider}"
-                        TickFrequency="1"
-                        TickPlacement="BottomRight"
-                        Value="{Binding Noise}" />
-                <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Delay :" />
-                <Slider Width="600"
-                        VerticalAlignment="Center"
-                        IsSelectionRangeEnabled="True"
-                        Maximum="500"
-                        Minimum="0"
-                        SelectionEnd="100"
-                        SelectionStart="0"
-                        Style="{StaticResource MaterialDesignDiscreteSlider}"
-                        TickFrequency="1"
-                        TickPlacement="BottomRight"
-                        Value="{Binding Delay}" />
-            </ToolBar>
-        </ToolBarTray>
+        <StackPanel>
+            <Menu Background="{DynamicResource PrimaryHueDarkBrush}">
+                <MenuItem Header="File">
+                    <MenuItem Command="{Binding CalculateCommand}"
+                              Header="New" />
+                    <MenuItem Command="{Binding LoadCommand}"
+                              Header="Open" />
+                    <Separator />
+                    <MenuItem Command="{Binding SaveCommand}"
+                              Header="Save"
+                              Icon="{mD:PackIcon Kind=ContentSave}" />
+                </MenuItem>
+                <MenuItem Header="Edit">
+                    <MenuItem Header="Weather?">
+                        <MenuItem Command="{Binding SetConditionCommand}"
+                                  Header="Add Weather Conditions"
+                                  Icon="{mD:PackIcon Kind=WeatherSunnyAlert}" />
+                        <MenuItem Command="{Binding RemoveConditionCommand}"
+                                  Header="Remove Weather Conditions"
+                                  Icon="{mD:PackIcon Kind=WeatherSunnyOff}" />
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Maze">
+                        <MenuItem Command="{Binding AddMazeCommand}"
+                                  Header="Add Maze"
+                                  Icon="{mD:PackIcon Kind=PuzzlePlus}" />
+                        <MenuItem Command="{Binding RemoveMazeCommand}"
+                                  Header="Remove Maze"
+                                  Icon="{mD:PackIcon Kind=PuzzleMinus}" />
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Command="{Binding WallToRoadCommand}"
+                              Header="Add Roads"
+                              Icon="{mD:PackIcon Kind=Road}" />
+                </MenuItem>
+            </Menu>
+            <ToolBarTray IsLocked="True">
+                <ToolBar Style="{DynamicResource MaterialDesignToolBar}">
+                    <Button Command="{Binding StartCommand}"
+                            Content="{mD:PackIcon Kind=Play}" />
+                    <Separator />
+                    <!--#region StartPoint/EndPoint-->
+                    <TextBlock VerticalAlignment="Center"
+                               Text="Start Point :" />
+                    <TextBox MinWidth="15"
+                             Padding="5"
+                             HorizontalContentAlignment="Center"
+                             mD:HintAssist.Hint="X"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding StartPoint.X}" />
+                    <TextBox MinWidth="15"
+                             Padding="5"
+                             HorizontalContentAlignment="Center"
+                             mD:HintAssist.Hint="Y"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding StartPoint.Y}" />
+                    <Separator />
+                    <TextBlock VerticalAlignment="Center"
+                               Text="End Point :" />
+                    <TextBox MinWidth="15"
+                             Padding="5"
+                             HorizontalContentAlignment="Center"
+                             mD:HintAssist.Hint="X"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding EndPoint.X}" />
+                    <TextBox MinWidth="15"
+                             Padding="5"
+                             HorizontalContentAlignment="Center"
+                             mD:HintAssist.Hint="Y"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding EndPoint.Y}" />
+                    <Separator />
+                    <!--#endregion-->
+                    <!--#region Dimension-->
+                    <TextBlock VerticalAlignment="Center"
+                               Text="Map Dimension :" />
+                    <TextBox MinWidth="15"
+                             Padding="5"
+                             HorizontalContentAlignment="Center"
+                             mD:HintAssist.Hint="Width"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding X}" />
+                    <TextBox MinWidth="15"
+                             Padding="5"
+                             HorizontalContentAlignment="Center"
+                             mD:HintAssist.Hint="Height"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding Y}" />
+                    <Separator />
+                    <!--#endregion-->
+                    <TextBox Padding="5"
+                             VerticalAlignment="Center"
+                             mD:HintAssist.Hint="Delay"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding Delay}" />
+                    <Separator />
+                    <TextBlock VerticalAlignment="Center"
+                               Text="Diagonal Movement :" />
+                    <ToggleButton IsChecked="{Binding IsDiagonalEnabled}" />
+                    <Separator />
+                    <TextBlock VerticalAlignment="Center"
+                               Text="Distance Type :" />
+                    <ToggleButton IsChecked="{Binding DistanceType}" />
+                    <Separator />
+                    <TextBlock VerticalAlignment="Center"
+                               Text="Tile Size :" />
+                    <ListBox SelectedValue="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                             SelectedValuePath="Content"
+                             Style="{StaticResource MaterialDesignToolToggleListBox}">
+                        <ListBoxItem Content="8" />
+                        <ListBoxItem Content="16" />
+                        <ListBoxItem Content="20" />
+                        <ListBoxItem Content="32" />
+                        <ListBoxItem Content="64" />
+                    </ListBox>
+
+                </ToolBar>
+            </ToolBarTray>
+        </StackPanel>
+
         <Expander Grid.Row="1">
             <DataGrid ItemsSource="{Binding PathScore}" />
         </Expander>
@@ -165,6 +185,7 @@
                                        Opacity="0.2"
                                        Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
                                        ToolTip="{Binding ToolTip}" />
+                                <TextBlock Text="{Binding ToolTip}" FontSize="10" />
                                 <!--<mD:PackIcon HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
                                      Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"

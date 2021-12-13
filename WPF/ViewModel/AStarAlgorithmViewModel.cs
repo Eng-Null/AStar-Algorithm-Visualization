@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using static WPF.AstarAlgorithm;
 using static WPF.DataTransaction;
 using static WPF.MazeManagement;
 using static WPF.StaticValues;
@@ -13,8 +14,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
 {
     #region Algorithem Constructors
 
-    public int X { get; set; } = 69;
-    public int Y { get; set; } = 29;
+    public int X { get; set; } = 11;
+    public int Y { get; set; } = 11;
     public Node[,] NodeMap { get; set; }
     public List<Node> OpenSet { get; set; } = new();
     public List<Node> CloseSet { get; set; } = new();
@@ -22,6 +23,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public Node StartNode { get; set; } = new();
     public Node GoalNode { get; set; } = new();
     public Node Current { get; set; } = new();
+    public bool DistanceType { get; set; }
     public bool IsDiagonalEnabled { get; set; }
     public string PathData { get; set; } = string.Empty;
 
@@ -63,7 +65,12 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public AStarAlgorithmViewModel()
     {
         StartCommand = new DelegateCommand(async () => await StartAsync(), CanStart);
-        CalculateCommand = new DelegateCommand(async () => await CalculateNodesAsync());
+        CalculateCommand = new DelegateCommand(async () =>
+        {
+            NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
+            await SetStartEndPoint();
+            await GetNodesAsync();
+        });
 
         WallToRoadCommand = new DelegateCommand(async () => await AddStreetAsync(X, Y, NodeMap), CanMaze);
 
@@ -87,32 +94,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     #region A* search algorithm Code Section
 
-    private async Task CalculateNodesAsync()
-    {
-        await Task.Run(async () =>
-        {
-            NodeMap = new Node[X, Y];
-            for (int i = 0; i < X; i++)
-            {
-                for (int j = 0; j < Y; j++)
-                {
-                    NodeMap[i, j] = new Node
-                    {
-                        X = i,
-                        Y = j,
-                    };
-                }
-            }
-            await SetStartEndPoint();
-
-            PathData = "";
-            OpenSet.Clear();
-            CloseSet.Clear();
-            Nodes = new();
-            await GetNodesAsync();
-        });
-    }
-
     private async Task SetStartEndPoint()
     {
         await Task.Run(() =>
@@ -120,6 +101,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             NodeMap[1, 1].Style = AStarSet.Start;
             NodeMap[1, 1].IsObstacle = false;
             NodeMap[1, 1].Condition = ExtraCondition.Road;
+            NodeMap[1, 1].G = 0;
 
             NodeMap[X - 2, Y - 2].Style = AStarSet.End;
             NodeMap[X - 2, Y - 2].IsObstacle = false;
@@ -138,7 +120,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
         await Task.Run(async () =>
         {
             await ClearNodeNeighbors();
-            await GetNeighborsAsync();
+            await GetNeighborsAsync(NodeMap, X, Y, IsDiagonalEnabled);
+            await ResetValuesAsync(NodeMap);
             await SetStartEndPoint();
             await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
 
@@ -152,14 +135,16 @@ public class AStarAlgorithmViewModel : BaseViewModel
             // The set of discovered nodes that may need to be (re-)expanded.
             // Initially, only the start node is known.
             // This is usually implemented as a min-heap or priority queue rather than a hash-set.
-            // openSet:= { start}
+            // openSet:= {start}
             OpenSet.Add(StartNode);
-
             while (OpenSet.Count > 0)
             {
                 // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
+                // current:= the node in openSet having the lowest fScore[] value
                 await CheckForLowestFAsync();
 
+                // if current = goal
+                // return reconstruct_path(cameFrom, current)
                 if (Current == GoalNode)
                 {
                     await FindPathAsync();
@@ -170,28 +155,28 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     return;
                 }
 
-                for (int i = 0; i < Current.Neighbors.Count; i++)
+                // openSet.Remove(current)
+                OpenSet.Remove(Current);
+                // for each neighbor of current
+                foreach (Node neighbor in Current.Neighbors)
                 {
-                    var neighbor = Current.Neighbors[i];
                     if (!CloseSet.Contains(neighbor) && !neighbor.IsObstacle)
                     {
                         // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
                         // tentative_gScore:= gScore[current] + d(current, neighbor)
-                        var tentativeGScore = Math.Round(Current.G + await MovementCost(neighbor, Current), 2);
-                        if (!OpenSet.Contains(neighbor))
-                        {
-                            OpenSet.Add(neighbor);
-                        }
-                        else if (tentativeGScore >= neighbor.G)
-                        {
-                            continue;
-                        }
+                        var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType);
 
-                        neighbor.G = tentativeGScore;
-                        neighbor.F = Math.Round(neighbor.G + neighbor.H, 2);
-                        neighbor.CameFrom = Current;
-
-                        OpenSet.Add(neighbor);
+                        if (tentativeGScore < neighbor.G)
+                        {
+                            // This path to neighbor is better than any previous one. Record it!
+                            neighbor.CameFrom = Current;
+                            neighbor.G = Math.Round(tentativeGScore, 2);
+                            neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2);
+                            if (!OpenSet.Contains(neighbor))
+                            {
+                                OpenSet.Add(neighbor);
+                            }
+                        }
                     }
                     await CheckOpenSetCloseSetPathAsync();
                     await FindPathAsync();
@@ -202,67 +187,12 @@ public class AStarAlgorithmViewModel : BaseViewModel
         });
     }
 
-    private async Task GetNeighborsAsync()
-    {
-        await Task.Run(() =>
-        {
-            Parallel.For(0, X, i =>
-            {
-                Parallel.For(0, Y, j =>
-                    {
-                        if (i < X - 1)
-                        {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j]);
-                        }
-
-                        if (i > 0)
-                        {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j]);
-                        }
-
-                        if (j < Y - 1)
-                        {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i, j + 1]);
-                        }
-
-                        if (j > 0)
-                        {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i, j - 1]);
-                        }
-                        if (IsDiagonalEnabled)
-                        {
-                            // diagonal Pathfinding
-                            if (i > 0 && j > 0)
-                            {
-                                NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j - 1]);
-                            }
-
-                            if (i < X - 1 && j > 0)
-                            {
-                                NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j - 1]);
-                            }
-
-                            if (i > 0 && j < Y - 1)
-                            {
-                                NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j + 1]);
-                            }
-
-                            if (i < X - 1 && j < Y - 1)
-                            {
-                                NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j + 1]);
-                            }
-                        }
-                    });
-            });
-        });
-    }
-
     private async Task CheckForLowestFAsync()
     {
         await Task.Run(() =>
         {
-            Current = OpenSet.OrderBy(x => x.H).ToList().First();
-            OpenSet.Remove(Current);
+            Current = OpenSet.OrderBy(x => x.F).ToList().First();
+
             if (!CloseSet.Contains(Current))
             {
                 CloseSet.Add(Current);
@@ -275,43 +205,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
         await Task.Run(async () =>
         {
             foreach (var node in NodeMap)
-            {   //TODO: Find the Correct Spot To add the Weight to the Nodes
-                node.H = Math.Round(await ManhattanDistance(node, GoalNode) + (double)node.Condition, 2);
-            }
-
-            async ValueTask<double> ManhattanDistance(Node node, Node goal)
             {
-                int dx;
-                int dy;
-                if (IsDiagonalEnabled)
-                {
-                    dx = Math.Abs(node.X - goal.X);
-                    dy = Math.Abs(node.Y - goal.Y);
-                    return await new ValueTask<double> (Math.Min(dx,dy) * Math.Sqrt(2) + Math.Abs(dx - dy));
-                    //(Math.Round(D * Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)), 2));
-                }
-
-                dx = Math.Abs(node.X - goal.X);
-                dy = Math.Abs(node.Y - goal.Y);
-                return await new ValueTask<double>(dx + dy);
+                node.H = Math.Round(D * await ManhattanDistance(node, GoalNode), 2);
             }
         });
-    }
-
-    private async ValueTask<double> MovementCost(Node firstNode, Node secondNode)
-    {
-        int dx;
-        int dy;
-        if (IsDiagonalEnabled)
-        {
-            dx = Math.Abs(firstNode.X - secondNode.X);
-            dy = Math.Abs(firstNode.Y - secondNode.Y);
-            return await new ValueTask<double>(Math.Round(Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)), 2));
-        }
-
-        dx = Math.Abs(firstNode.X - secondNode.X);
-        dy = Math.Abs(firstNode.Y - secondNode.Y);
-        return await new ValueTask<double>(dx - dy);
     }
 
     private async Task FindPathAsync()
@@ -326,6 +223,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             Node? temp = Current;
             Path.Add(temp);
             var middle = TileSize / 2;
+
             while (temp.CameFrom is not null)
             {
                 PathData += $"M {temp.X * TileSize + middle},{temp.Y * TileSize + middle} {temp.CameFrom.X * TileSize + middle},{temp.CameFrom.Y * TileSize + middle} ";
@@ -349,6 +247,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 score += node.F;
             });
+
             pathScore.Length = Path.Count;
             pathScore.Score = score;
             pathScore.Visited = CloseSet.Count;
