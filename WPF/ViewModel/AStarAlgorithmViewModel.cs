@@ -69,36 +69,40 @@ public class AStarAlgorithmViewModel : BaseViewModel
             switch (MapType)
             {
                 case 0:
-                    NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
+                    NodeMap = await CalculateNodesAsync(NodeMap);
                     break;
 
                 case 1:
-                    NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
-                    await AddMazeAsync(X, Y, NodeMap);
+                    NodeMap = await CalculateNodesAsync(NodeMap);
+                    await AddMazeAsync(NodeMap);
                     break;
 
                 case 2:
-                    NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
-                    await AddStreetAsync(X, Y, NodeMap);
+                    NodeMap = await CalculateNodesAsync(NodeMap);
+                    await AddStreetAsync(NodeMap);
                     break;
             }
             await SetStartEndPoint();
             await GetNodesAsync();
         });
 
-        WallToRoadCommand = new DelegateCommand(async () => await AddStreetAsync(X, Y, NodeMap), CanMaze);
+        WallToRoadCommand = new DelegateCommand(async () => await AddStreetAsync(NodeMap), CanMaze);
 
         SetConditionCommand = new DelegateCommand(async () => NodeMap = await AddWeatherConditionAsync(NodeMap), CanCondition);
         RemoveConditionCommand = new DelegateCommand(async () => await RemoveWeatherConditionAsync(NodeMap), CanCondition);
 
-        AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(X, Y, NodeMap), CanMaze);
+        AddMazeCommand = new DelegateCommand(async () => await AddMazeAsync(NodeMap), CanMaze);
         RemoveMazeCommand = new DelegateCommand(async () => await RemoveMazeAsync(NodeMap), CanMaze);
 
         SaveCommand = new DelegateCommand(async () => await SaveAsync(NodeMap), CanMaze);
         LoadCommand = new DelegateCommand(async () =>
         {
-            NodeMap = await LoadAsync();
-            await GetNodesAsync();
+            var temp = await LoadAsync();
+            if (temp is not null)
+            {
+                NodeMap = temp;
+                await GetNodesAsync();
+            }
         });
         //GetNodeAxis = new DelegateCommand(async () => await GetAxisAsync());
         NodeMap = new Node[X, Y];
@@ -131,7 +135,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
         await Task.Run(async () =>
         {
             await ClearNodeNeighbors();
-            await GetNeighborsAsync(NodeMap, X, Y, IsDiagonalEnabled);
+            await GetNeighborsAsync(NodeMap, IsDiagonalEnabled);
             await ResetValuesAsync(NodeMap);
             await SetStartEndPoint();
             await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
@@ -175,7 +179,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     {
                         // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
                         // tentative_gScore:= gScore[current] + d(current, neighbor)
-                        var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType);
+                        var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType) + (int)neighbor.Condition;
 
                         if (tentativeGScore < neighbor.G)
                         {

@@ -1,8 +1,9 @@
 ﻿namespace WPF;
+using static WPF.StaticValues;
 
 public static class AstarAlgorithm
 {
-    public static async Task<Node[,]> CalculateNodesAsync(Node[,] NodeMap, int X, int Y)
+    public static async Task<Node[,]> CalculateNodesAsync(Node[,] NodeMap)
     {
         return await Task.Run(() =>
         {
@@ -41,7 +42,7 @@ public static class AstarAlgorithm
         });
     }
 
-    public static async Task GetNeighborsAsync(Node[,] NodeMap, int X, int Y, bool IsDiagonalEnabled)
+    public static async Task GetNeighborsAsync(Node[,] NodeMap, bool IsDiagonalEnabled)
     {
         await Task.Run(() =>
         {

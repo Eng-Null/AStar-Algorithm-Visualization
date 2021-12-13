@@ -36,10 +36,10 @@ public class Node : BaseViewModel
     public ExtraCondition Condition { get; set; } = ExtraCondition.Clear;
 
     [JsonIgnore]
-    public string ToolTip => //$"Node: ({X},{Y}) \n" +
-        $"G: {G} \n" +//[Distance from Start to the NEIGHBOR through CURRENT]\n" +
-        $"H: {H} \n" +//[h(n) estimates the cost to reach GOAL from node n]\n" +
-        $"F: {F} \n" ;//[fScore[n] := gScore[n] + h(n).]\n" +
-        //$"Condition: {Condition}\n" +
-        //$"CameFrom: ({CameFrom?.X},{CameFrom?.Y})";
+    public string ToolTip => $"Node: ({X},{Y}) \n" +
+        $"G: {G} [Distance from Start to the NEIGHBOR through CURRENT]\n" +
+        $"H: {H} [h(n) Estimates the cost to reach GOAL from node n]\n" +
+        $"F: {F} [fScore[n] := gScore[n] + h(n).]\n" +
+        $"Condition: {Condition}\n" +
+        $"CameFrom: ({CameFrom?.X},{CameFrom?.Y})";
 }

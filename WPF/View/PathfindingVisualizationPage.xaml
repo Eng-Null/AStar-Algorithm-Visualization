@@ -126,8 +126,8 @@
                                            Opacity="0.2"
                                            Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
                                            ToolTip="{Binding ToolTip}" />
-                                    <TextBlock FontSize="10"
-                                               Text="{Binding ToolTip}" />
+                                    <!--<TextBlock FontSize="10"
+                                               Text="{Binding ToolTip}" />-->
                                     <!--<mD:PackIcon HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
                                      Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"

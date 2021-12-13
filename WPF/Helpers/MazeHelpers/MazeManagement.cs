@@ -1,16 +1,14 @@
 ﻿namespace WPF;
+using static WPF.StaticValues;
 
 public static class MazeManagement
 {
     private static Node[,] NodeMap { get; set; }
-    private static int X;
-    private static int Y;
 
-    public static async Task<Node[,]> AddMazeAsync(int x, int y, Node[,] nodeMap)
+
+    public static async Task<Node[,]> AddMazeAsync(Node[,] nodeMap)
     {
         NodeMap = nodeMap;
-        X = x;
-        Y = y;
         NodeMap = await AddMazeOuterWallsAsync();
         await AddMazeInnerWallsAsync(true, 1, Y - 2, 1, X - 2, new Point(X - 2, Y - 2));
         return NodeMap;

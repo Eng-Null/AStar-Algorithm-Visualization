@@ -34,19 +34,34 @@
                         HorizontalAlignment="Center">
                 <TextBlock VerticalAlignment="Center"
                            Text="Map Dimension" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBox MinWidth="50"
+                <TextBlock MaxWidth="180"
+                           VerticalAlignment="Center"
+                           FontSize="10"
+                           Foreground="{StaticResource SecondaryHueMidBrush}"
+                           Text="Note (1): If You are using Maze/Street make sure the dimension is an odd number for better looking result."
+                           TextWrapping="WrapWithOverflow" />
+                <TextBlock MaxWidth="180"
+                           VerticalAlignment="Center"
+                           FontSize="10"
+                           Foreground="{StaticResource SecondaryHueMidBrush}"
+                           Text="Note (2): Due to WPF UI Thread memory Highest recommended dimensions is 61*61."
+                           TextWrapping="WrapWithOverflow" />
+                <StackPanel Margin="0,6,0,0"
+                            Orientation="Horizontal">
+                    <TextBox MinWidth="30"
                              Padding="5"
                              HorizontalContentAlignment="Center"
                              mD:HintAssist.Hint="Width"
+                             mD:TextFieldAssist.HasClearButton="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             Text="{Binding Source={StaticResource StaticValues}, Path=X}" />
-                    <TextBox MinWidth="50"
+                             Text="{Binding Source={StaticResource StaticValues}, Path=X, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox MinWidth="30"
                              Padding="5"
                              HorizontalContentAlignment="Center"
                              mD:HintAssist.Hint="Height"
+                             mD:TextFieldAssist.HasClearButton="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             Text="{Binding Source={StaticResource StaticValues}, Path=Y}" />
+                             Text="{Binding Source={StaticResource StaticValues}, Path=Y, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </StackPanel>
             <!--#region StartPoint/EndPoint-->
@@ -55,35 +70,41 @@
                         HorizontalAlignment="Center">
                 <TextBlock VerticalAlignment="Center"
                            Text="Start Point" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBox MinWidth="50"
+                <StackPanel Margin="0,6,0,6"
+                            Orientation="Horizontal">
+                    <TextBox MinWidth="30"
                              Padding="5"
                              HorizontalContentAlignment="Center"
                              mD:HintAssist.Hint="X"
+                             mD:TextFieldAssist.HasClearButton="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Source={StaticResource StaticValues}, Path=StartPointX}" />
-                    <TextBox MinWidth="50"
+                    <TextBox MinWidth="30"
                              Padding="5"
                              HorizontalContentAlignment="Center"
                              mD:HintAssist.Hint="Y"
+                             mD:TextFieldAssist.HasClearButton="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Source={StaticResource StaticValues}, Path=StartPointY}" />
                 </StackPanel>
                 <TextBlock VerticalAlignment="Center"
                            Text="End Point" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBox MinWidth="50"
+                <StackPanel Margin="0,8,0,0"
+                            Orientation="Horizontal">
+                    <TextBox MinWidth="30"
                              Padding="5"
                              HorizontalContentAlignment="Center"
                              mD:HintAssist.Hint="X"
+                             mD:TextFieldAssist.HasClearButton="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             Text="{Binding Source={StaticResource StaticValues}, Path=EndPointX}" />
-                    <TextBox MinWidth="50"
+                             Text="{Binding Source={StaticResource StaticValues}, Path=EndPointX, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox MinWidth="30"
                              Padding="5"
                              HorizontalContentAlignment="Center"
                              mD:HintAssist.Hint="Y"
+                             mD:TextFieldAssist.HasClearButton="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             Text="{Binding Source={StaticResource StaticValues}, Path=EndPointY}" />
+                             Text="{Binding Source={StaticResource StaticValues}, Path=EndPointY, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </StackPanel>
             <!--#endregion-->
@@ -91,28 +112,33 @@
                         Grid.ColumnSpan="2"
                         Margin="4"
                         HorizontalAlignment="Stretch">
-                <TextBlock Text="Extra Modifiers" />
+                <TextBlock Margin="0,0,0,6"
+                           Text="Extra Modifiers" />
                 <ListBox mD:ListBoxAssist.IsToggle="True"
                          SelectedValue="{Binding Source={StaticResource StaticValues}, Path=MapType}"
                          SelectedValuePath="Tag"
                          Style="{StaticResource MaterialDesignToolToggleFlatListBox}">
                     <ListBoxItem Content="{mD:PackIcon Kind=Map}"
                                  IsSelected="True"
-                                 Tag="0" />
+                                 Tag="0"
+                                 ToolTip="Empty Map" />
                     <ListBoxItem Content="{mD:PackIcon Kind=Puzzle}"
-                                 Tag="1" />
+                                 Tag="1"
+                                 ToolTip="Maze" />
                     <ListBoxItem Content="{mD:PackIcon Kind=Road}"
-                                 Tag="2" />
+                                 Tag="2"
+                                 ToolTip="Roads" />
                 </ListBox>
             </StackPanel>
 
             <StackPanel Grid.Row="3"
                         Grid.ColumnSpan="2"
                         Margin="4"
-                        HorizontalAlignment="Center">
+                        HorizontalAlignment="Stretch">
                 <Separator />
-                <TextBlock VerticalAlignment="Center"
-                           Text="Tile Size" />
+                <TextBlock Margin="0,0,0,6"
+                           VerticalAlignment="Center"
+                           Text="Tile Size in Pixels" />
                 <ListBox SelectedValue="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                          SelectedValuePath="Content"
                          Style="{StaticResource MaterialDesignToolToggleListBox}">

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 using System.Windows.Forms;
+using static WPF.StaticValues;
 
 namespace WPF;
 
@@ -26,7 +27,12 @@ public static class DataTransaction
             {
                 using StreamReader r = new(openFileDialog.FileName);
                 string json = r.ReadToEnd();
-                Node[,] items = JsonConvert.DeserializeObject<Node[,]>(json);
+                var items = JsonConvert.DeserializeObject<Node[,]>(json);
+                if (items is not null)
+                {
+                    X = items.GetLength(0);
+                    Y = items.GetLength(1);
+                }
                 return items;
             });
         }
