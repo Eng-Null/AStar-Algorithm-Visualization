@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using MaterialDesignThemes.Wpf;
+using System.Diagnostics;
 using static WPF.AstarAlgorithm;
 using static WPF.DataTransaction;
 using static WPF.MazeManagement;
@@ -14,8 +15,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
 {
     #region Algorithem Constructors
 
-    public int X { get; set; } = 11;
-    public int Y { get; set; } = 11;
     public Node[,] NodeMap { get; set; }
     public List<Node> OpenSet { get; set; } = new();
     public List<Node> CloseSet { get; set; } = new();
@@ -50,8 +49,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     public ObservableCollection<Node> Nodes { get; set; } = new();
     public ObservableCollection<PathScore> PathScore { get; set; } = new();
-    public Point StartPoint { get; set; } = new();
-    public Point EndPoint { get; set; } = new();
+
     public int Delay { get; set; } = 20;
     private TimeSpan TimeSpan { get; set; }
     private TimeSpan ExcludedTime { get; set; }
@@ -67,7 +65,23 @@ public class AStarAlgorithmViewModel : BaseViewModel
         StartCommand = new DelegateCommand(async () => await StartAsync(), CanStart);
         CalculateCommand = new DelegateCommand(async () =>
         {
-            NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
+            await DialogHost.Show(new NewMapControl { }, "AStarDialog");
+            switch (MapType)
+            {
+                case 0:
+                    NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
+                    break;
+
+                case 1:
+                    NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
+                    await AddMazeAsync(X, Y, NodeMap);
+                    break;
+
+                case 2:
+                    NodeMap = await CalculateNodesAsync(NodeMap, X, Y);
+                    await AddStreetAsync(X, Y, NodeMap);
+                    break;
+            }
             await SetStartEndPoint();
             await GetNodesAsync();
         });
@@ -98,20 +112,17 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            NodeMap[1, 1].Style = AStarSet.Start;
-            NodeMap[1, 1].IsObstacle = false;
-            NodeMap[1, 1].Condition = ExtraCondition.Road;
-            NodeMap[1, 1].G = 0;
+            NodeMap[StartPointX, StartPointY].Style = AStarSet.Start;
+            NodeMap[StartPointX, StartPointY].IsObstacle = false;
+            NodeMap[StartPointX, StartPointY].Condition = ExtraCondition.Road;
+            NodeMap[StartPointX, StartPointY].G = 0;
 
-            NodeMap[X - 2, Y - 2].Style = AStarSet.End;
-            NodeMap[X - 2, Y - 2].IsObstacle = false;
-            NodeMap[X - 2, Y - 2].Condition = ExtraCondition.Road;
+            NodeMap[EndPointX, EndPointY].Style = AStarSet.End;
+            NodeMap[EndPointX, EndPointY].IsObstacle = false;
+            NodeMap[EndPointX, EndPointY].Condition = ExtraCondition.Road;
 
-            StartPoint = new(1, 1);
-            EndPoint = new(X - 2, Y - 2);
-
-            StartNode = NodeMap[(int)StartPoint.X, (int)StartPoint.Y];
-            GoalNode = NodeMap[(int)EndPoint.X, (int)EndPoint.Y];
+            StartNode = NodeMap[StartPointX, StartPointY];
+            GoalNode = NodeMap[EndPointX, EndPointY];
         });
     }
 
