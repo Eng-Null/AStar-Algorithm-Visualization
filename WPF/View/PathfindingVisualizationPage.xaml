@@ -86,12 +86,36 @@
                         <TextBlock VerticalAlignment="Center"
                                    Text="Distance Type :" />
                         <ToggleButton IsChecked="{Binding DistanceType}" />
+                        <ListBox SelectedValue="{Binding AlgorithemType}"
+                                 SelectedValuePath="Tag"
+                                 Style="{StaticResource MaterialDesignToolToggleListBox}">
+                            <ListBoxItem Content="Dijkstra's Algorithm"
+                                         Tag="0" />
+                            <ListBoxItem Content="A* Algorithm"
+                                         Tag="1" />
+                        </ListBox>
                     </ToolBar>
                 </ToolBarTray>
             </StackPanel>
 
             <Expander Grid.Row="1">
-                <DataGrid ItemsSource="{Binding PathScore}" />
+                <DataGrid AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          ItemsSource="{Binding PathScore}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Algorithm}"
+                                            Header="Algorithm" />
+                        <DataGridTextColumn Binding="{Binding Time}"
+                                            Header="Time" />
+                        <DataGridTextColumn Binding="{Binding Length}"
+                                            Header="Length" />
+                        <DataGridTextColumn Binding="{Binding Score}"
+                                            Header="Score" />
+                        <DataGridTextColumn Binding="{Binding Visited}"
+                                            Header="Visited" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </Expander>
             <ScrollViewer Grid.Row="2"
                           Margin="10"

@@ -25,6 +25,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public bool DistanceType { get; set; }
     public bool IsDiagonalEnabled { get; set; }
     public string PathData { get; set; } = string.Empty;
+    public int AlgorithemType { get; set; } = 1;
 
     #endregion Algorithem Constructors
 
@@ -120,6 +121,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             NodeMap[StartPointX, StartPointY].IsObstacle = false;
             NodeMap[StartPointX, StartPointY].Condition = ExtraCondition.Road;
             NodeMap[StartPointX, StartPointY].G = 0;
+            NodeMap[StartPointX, StartPointY].F = 0;
 
             NodeMap[EndPointX, EndPointY].Style = AStarSet.End;
             NodeMap[EndPointX, EndPointY].IsObstacle = false;
@@ -186,7 +188,16 @@ public class AStarAlgorithmViewModel : BaseViewModel
                             // This path to neighbor is better than any previous one. Record it!
                             neighbor.CameFrom = Current;
                             neighbor.G = Math.Round(tentativeGScore, 2);
-                            neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2);
+                            switch (AlgorithemType)
+                            {
+                                case 0:
+                                    neighbor.F = 0;
+                                    break;
+
+                                case 1:
+                                    neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2);
+                                    break;
+                            }
                             if (!OpenSet.Contains(neighbor))
                             {
                                 OpenSet.Add(neighbor);
@@ -255,7 +266,15 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            PathScore pathScore = new();
+            PathScore pathScore = new()
+            {
+                Length = Path.Count,
+                Visited = CloseSet.Count,
+                Time = TimeSpan,
+                Path = PathData,
+                OpenSet = OpenSet,
+                CloseSet = CloseSet,               
+            };
             var score = 0.0;
 
             Parallel.ForEach(Path, node =>
@@ -263,10 +282,17 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 score += node.F;
             });
 
-            pathScore.Length = Path.Count;
             pathScore.Score = score;
-            pathScore.Visited = CloseSet.Count;
-            pathScore.Time = TimeSpan;
+
+            switch (AlgorithemType)
+            {
+                case 0:
+                    pathScore.Algorithm = "Dijkstra's Algorithm";
+                    break;
+                case 1:
+                    pathScore.Algorithm = "A* Algorithm";
+                    break;
+            }
             PathScore.Add(pathScore);
         });
     }
