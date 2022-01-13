@@ -132,12 +132,92 @@
                                  ToolTip="Main Page">
                             <view:HomePage />
                         </TabItem>
+
                         <TabItem Header="{mD:PackIcon Kind=PresentationPlay,
                                                       Size=24}"
                                  Style="{StaticResource MaterialDesignNavigationRailTabItem}"
                                  ToolTip="Presentation">
-                            <wv2:WebView2 x:Name="webView"
-                                          Source="https://docs.google.com/" />
+                            <DocumentViewer Name="myDocumentViewer">
+                                <!--#region Resources-->
+                                <DocumentViewer.Resources>
+                                    <Style x:Key="{x:Type DocumentViewer}"
+                                           TargetType="{x:Type DocumentViewer}">
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignDarkForeground}" />
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type DocumentViewer}">
+                                                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            Focusable="False">
+                                                        <Grid KeyboardNavigation.TabNavigation="Local">
+                                                            <Grid.Background>
+                                                                <SolidColorBrush Color="Transparent" />
+                                                            </Grid.Background>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" />
+                                                                <RowDefinition Height="0" />
+                                                            </Grid.RowDefinitions>
+                                                            <ToolBar KeyboardNavigation.TabNavigation="Continue"
+                                                                     ToolBarTray.IsLocked="True">
+                                                                <Button Command="ApplicationCommands.Print"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Print" />
+                                                                <!--<Button Command="ApplicationCommands.Copy"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Copy" />-->
+                                                                <Separator />
+                                                                <Button Command="NavigationCommands.IncreaseZoom"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Zoom In" />
+                                                                <Button Command="NavigationCommands.DecreaseZoom"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Zoom Out" />
+                                                                <Separator />
+                                                                <Button Command="NavigationCommands.Zoom"
+                                                                        CommandParameter="100.0"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Actual Size" />
+                                                                <Button Command="DocumentViewer.FitToWidthCommand"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Fit to Width" />
+                                                                <Button Command="DocumentViewer.FitToMaxPagesAcrossCommand"
+                                                                        CommandParameter="1"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Whole Page" />
+                                                                <Button Command="DocumentViewer.FitToMaxPagesAcrossCommand"
+                                                                        CommandParameter="2"
+                                                                        CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                        Content="Two Pages" />
+                                                            </ToolBar>
+
+                                                            <ScrollViewer x:Name="PART_ContentHost"
+                                                                          Grid.Row="1"
+                                                                          CanContentScroll="true"
+                                                                          HorizontalScrollBarVisibility="Auto"
+                                                                          IsTabStop="true">
+                                                                <ScrollViewer.Background>
+                                                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                        <GradientStop Offset="0" Color="{DynamicResource ControlLightColor}" />
+                                                                        <GradientStop Offset="1" Color="{DynamicResource ControlMediumColor}" />
+                                                                    </LinearGradientBrush>
+                                                                </ScrollViewer.Background>
+                                                            </ScrollViewer>
+
+                                                            <ContentControl x:Name="PART_FindToolBarHost"
+                                                                            Grid.Row="2"
+                                                                            Visibility="Hidden" />
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </DocumentViewer.Resources>
+                                <!--#endregion-->
+                            </DocumentViewer>
                         </TabItem>
                         <TabItem Header="{mD:PackIcon Kind=Code,
                                                       Size=24}"
@@ -150,7 +230,7 @@
                                  Style="{StaticResource MaterialDesignNavigationRailTabItem}"
                                  ToolTip="IEEE Conference Paper">
                             <wv2:WebView2 x:Name="webView2"
-                                          Source="https://ftp.cc.uoc.gr/mirrors/CTAN/macros/latex/contrib/IEEEtran/IEEEtran_HOWTO.pdf" />
+                                          Source="https://www.google.com"/>
                         </TabItem>
                     </TabControl>
                 </Grid>

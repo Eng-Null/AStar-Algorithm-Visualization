@@ -95,6 +95,8 @@ public static class AstarAlgorithm
                 });
             });
         });
+
+
     }
 
     public static async ValueTask<double> ManhattanDistance(Node firstNode, Node secondNode)

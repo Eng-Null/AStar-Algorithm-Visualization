@@ -24,6 +24,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public Node Current { get; set; } = new();
     public bool DistanceType { get; set; }
     public bool IsDiagonalEnabled { get; set; }
+    public bool IsConditionEnabled { get; set; }
     public string PathData { get; set; } = string.Empty;
     public int AlgorithemType { get; set; } = 1;
 
@@ -51,11 +52,25 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public ObservableCollection<Node> Nodes { get; set; } = new();
     public ObservableCollection<PathScore> PathScore { get; set; } = new();
 
+    public PathScore SelectedPathScore
+    {
+        get => selectedPathScore;
+        set
+        {
+            selectedPathScore = value;
+            NodeMap = value.NodeMap;
+            OpenSet = value.OpenSet;
+            CloseSet = value.CloseSet;
+            PathData = value.Path;
+            GetNodesAsync();
+        }
+    }
     public int Delay { get; set; } = 20;
     private TimeSpan TimeSpan { get; set; }
     private TimeSpan ExcludedTime { get; set; }
     private TimeSpan TotalDelay { get; set; }
     private Stopwatch Watch = new();
+    private PathScore selectedPathScore = new();
     private readonly object _Nodeslock = new();
     private readonly object _PathScorelock = new();
 
@@ -71,16 +86,19 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 case 0:
                     NodeMap = await CalculateNodesAsync(NodeMap);
+                    PathData = string.Empty;
                     break;
 
                 case 1:
                     NodeMap = await CalculateNodesAsync(NodeMap);
                     await AddMazeAsync(NodeMap);
+                    PathData = string.Empty;
                     break;
 
                 case 2:
                     NodeMap = await CalculateNodesAsync(NodeMap);
                     await AddStreetAsync(NodeMap);
+                    PathData = string.Empty;
                     break;
             }
             await SetStartEndPoint();
@@ -181,7 +199,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     {
                         // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
                         // tentative_gScore:= gScore[current] + d(current, neighbor)
-                        var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType) + (int)neighbor.Condition;
+                        var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType) + (IsConditionEnabled? (int)neighbor.Condition : 0);
 
                         if (tentativeGScore < neighbor.G)
                         {
@@ -273,7 +291,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 Time = TimeSpan,
                 Path = PathData,
                 OpenSet = OpenSet,
-                CloseSet = CloseSet,               
+                CloseSet = CloseSet,
+                NodeMap = NodeMap
             };
             var score = 0.0;
 

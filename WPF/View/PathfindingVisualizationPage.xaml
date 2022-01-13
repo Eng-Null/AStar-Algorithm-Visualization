@@ -79,13 +79,15 @@
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  Text="{Binding Delay}" />
                         <Separator />
-                        <TextBlock VerticalAlignment="Center"
-                                   Text="Diagonal Movement :" />
-                        <ToggleButton IsChecked="{Binding IsDiagonalEnabled}" />
+                        <CheckBox Content="Conditions"
+                                  IsChecked="{Binding IsConditionEnabled}" />
+                        <CheckBox Content="Diagonal Movement"
+                                  IsChecked="{Binding IsDiagonalEnabled}" />
+                        <CheckBox Content="Distance Type"
+                                  IsChecked="{Binding DistanceType}" />
+                        <CheckBox x:Name="ShowValues"
+                                  Content="Show Values" />
                         <Separator />
-                        <TextBlock VerticalAlignment="Center"
-                                   Text="Distance Type :" />
-                        <ToggleButton IsChecked="{Binding DistanceType}" />
                         <ListBox SelectedValue="{Binding AlgorithemType}"
                                  SelectedValuePath="Tag"
                                  Style="{StaticResource MaterialDesignToolToggleListBox}">
@@ -102,18 +104,44 @@
                 <DataGrid AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
-                          ItemsSource="{Binding PathScore}">
+                          ItemsSource="{Binding PathScore}"
+                          SelectedItem="{Binding SelectedPathScore}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding Algorithm}"
-                                            Header="Algorithm" />
-                        <DataGridTextColumn Binding="{Binding Time}"
-                                            Header="Time" />
-                        <DataGridTextColumn Binding="{Binding Length}"
-                                            Header="Length" />
-                        <DataGridTextColumn Binding="{Binding Score}"
-                                            Header="Score" />
-                        <DataGridTextColumn Binding="{Binding Visited}"
-                                            Header="Visited" />
+                        <DataGridTemplateColumn Header="Algorithm">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Algorithm}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Time">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Time}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Length">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Length}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Score">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Score}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Visited">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Visited}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Expander>
@@ -121,6 +149,7 @@
                           Margin="10"
                           HorizontalScrollBarVisibility="Auto">
                 <Grid>
+                    <!--#region Tile Style-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -131,8 +160,10 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
                             <Style TargetType="{x:Type ContentPresenter}">
-                                <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
-                                <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Left"
+                                        Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top"
+                                        Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
                             </Style>
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
@@ -144,6 +175,38 @@
                                            Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
                                            Stretch="UniformToFill"
                                            ToolTip="{Binding ToolTip}" />
+                                    <!--<TextBlock FontSize="10"
+                                               Text="{Binding ToolTip}" />-->
+                                    <!--<mD:PackIcon HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
+                                     Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
+                                     Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}" />-->
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!--#endregion-->
+                    <!--#region Tile Set -->
+                    <ItemsControl ItemsSource="{Binding Nodes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Width="8000"
+                                        Height="8000"
+                                        CacheMode="BitmapCache" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="{x:Type ContentPresenter}">
+                                <Setter Property="Canvas.Left"
+                                        Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top"
+                                        Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
                                     <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            CacheMode="BitmapCache"
@@ -161,13 +224,75 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <!--#endregion-->
+                    <!--#region Tile Value -->
+                    <ItemsControl ItemsSource="{Binding Nodes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Visibility="{Binding IsChecked, ElementName=ShowValues, Converter={valueConverter:BoolToVisibilityValueConverter}}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="{x:Type ContentPresenter}">
+                                <Setter Property="Canvas.Left"
+                                        Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top"
+                                        Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="White"
+                                        BorderThickness="1">
+                                    <Viewbox Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                             Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}">
+                                        <Grid Background="#662D2D2D">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"
+                                                                  MinWidth="32" />
+                                                <ColumnDefinition Width="*"
+                                                                  MinWidth="32" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"
+                                                               MinHeight="32" />
+                                                <RowDefinition Height="*"
+                                                               MinHeight="32" />
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Margin="4,4,0,0"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding G}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        Margin="0,4,4,0"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding H}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Margin="0,0,4,4"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom">
+                                                <TextBlock Foreground="{StaticResource SecondaryHueMidBrush}"
+                                                           Text="{Binding F}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Viewbox>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!--#endregion-->
+                    <!--#region Tile Path -->
                     <Canvas CacheMode="BitmapCache">
-
                         <Path CacheMode="BitmapCache"
                               Data="{Binding PathData}"
-                              Stroke="Black"
+                              Stroke="#CC38888E"
                               StrokeThickness="4" />
                     </Canvas>
+                    <!--#endregion-->
                 </Grid>
             </ScrollViewer>
         </Grid>

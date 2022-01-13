@@ -10,5 +10,6 @@ public class PathScore : BaseViewModel
     public string Path { get; set; }
     public List<Node> OpenSet { get; set; }
     public List<Node> CloseSet { get; set; }
+    public Node[,] NodeMap { get; set; }
 
 }

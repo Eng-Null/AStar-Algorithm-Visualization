@@ -2,7 +2,7 @@
 
 public enum ExtraCondition
 {
-    Clear = 50,
+    Clear = 40,
     Road = 0,
     Sunny = 100,
     Cloudy = 150,
