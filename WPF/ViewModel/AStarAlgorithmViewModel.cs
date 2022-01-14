@@ -1,5 +1,6 @@
 ﻿using MaterialDesignThemes.Wpf;
 using System.Diagnostics;
+using System.Windows.Forms;
 using static WPF.AstarAlgorithm;
 using static WPF.DataTransaction;
 using static WPF.MazeManagement;
@@ -66,9 +67,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
         }
     }
     public int Delay { get; set; } = 20;
-    private TimeSpan TimeSpan { get; set; }
-    private TimeSpan ExcludedTime { get; set; }
-    private TimeSpan TotalDelay { get; set; }
+    private List<long> StepTimeSpan { get; set; }
     private Stopwatch Watch = new();
     private PathScore selectedPathScore = new();
     private readonly object _Nodeslock = new();
@@ -163,10 +162,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
             PathData = "";
             OpenSet.Clear();
             CloseSet.Clear();
-            ExcludedTime = TimeSpan.FromTicks(0);
-            TotalDelay = TimeSpan.FromTicks(0);
-            Watch = new();
-            Watch.Start();
+            StepTimeSpan = new();
+
             // The set of discovered nodes that may need to be (re-)expanded.
             // Initially, only the start node is known.
             // This is usually implemented as a min-heap or priority queue rather than a hash-set.
@@ -174,9 +171,19 @@ public class AStarAlgorithmViewModel : BaseViewModel
             OpenSet.Add(StartNode);
             while (OpenSet.Count > 0)
             {
+                Watch = new();
+                Watch.Start();
                 // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
                 // current:= the node in openSet having the lowest fScore[] value
-                await CheckForLowestFAsync();
+                switch (AlgorithemType)
+                {
+                    case 2:
+                        await CheckForLowestHAsync();
+                        break;
+                    default:
+                        await CheckForLowestFAsync();
+                        break;
+                }
 
                 // if current = goal
                 // return reconstruct_path(cameFrom, current)
@@ -184,8 +191,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 {
                     await FindPathAsync();
                     await CheckOpenSetCloseSetPathAsync();
+
                     Watch.Stop();
-                    TimeSpan = Watch.Elapsed - ExcludedTime - TotalDelay;
+                    StepTimeSpan.Add(Watch.ElapsedTicks);
+
                     await CalculatePathValueAsync();
                     return;
                 }
@@ -225,7 +234,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     await CheckOpenSetCloseSetPathAsync();
                     await FindPathAsync();
                 }
-                TotalDelay += TimeSpan.FromMilliseconds(Delay);
+
+                Watch.Stop();
+                StepTimeSpan.Add(Watch.ElapsedTicks);
+
                 await Task.Delay(Delay);
             }
         });
@@ -236,6 +248,18 @@ public class AStarAlgorithmViewModel : BaseViewModel
         await Task.Run(() =>
         {
             Current = OpenSet.OrderBy(x => x.F).ToList().First();
+
+            if (!CloseSet.Contains(Current))
+            {
+                CloseSet.Add(Current);
+            }
+        });
+    }
+    private async Task CheckForLowestHAsync()
+    {
+        await Task.Run(() =>
+        {
+            Current = OpenSet.OrderBy(x => x.H).ToList().First();
 
             if (!CloseSet.Contains(Current))
             {
@@ -259,24 +283,19 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            var watch = new Stopwatch();
-            watch.Start();
-
             Path.Clear();
             PathData = "";
             Node? temp = Current;
             Path.Add(temp);
-            var middle = TileSize / 2;
 
+            //Drawing the path
+            var middle = TileSize / 2;
             while (temp.CameFrom is not null)
             {
                 PathData += $"M {temp.X * TileSize + middle},{temp.Y * TileSize + middle} {temp.CameFrom.X * TileSize + middle},{temp.CameFrom.Y * TileSize + middle} ";
                 Path.Add(temp.CameFrom);
                 temp = temp.CameFrom;
             }
-
-            watch.Stop();
-            ExcludedTime += watch.Elapsed;
         });
     }
 
@@ -288,20 +307,22 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 Length = Path.Count,
                 Visited = CloseSet.Count,
-                Time = TimeSpan,
+                Time = TimeSpan.FromTicks((long)(StepTimeSpan.Average() * CloseSet.Count)),
                 Path = PathData,
                 OpenSet = OpenSet,
                 CloseSet = CloseSet,
                 NodeMap = NodeMap
             };
-            var score = 0.0;
 
-            Parallel.ForEach(Path, node =>
-            {
-                score += node.F;
-            });
+            //TODO: Calculate Score Value
+            //var score = 0.0;
 
-            pathScore.Score = score;
+            //Parallel.ForEach(Path, node =>
+            //{
+            //    score += node.F;
+            //});
+
+            //pathScore.Score = score;
 
             switch (AlgorithemType)
             {
@@ -310,6 +331,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     break;
                 case 1:
                     pathScore.Algorithm = "A* Algorithm";
+                    break;
+                case 2:
+                    pathScore.Algorithm = "Best-First Search";
                     break;
             }
             PathScore.Add(pathScore);
@@ -324,9 +348,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            var watch = new Stopwatch();
-            watch.Start();
-
             foreach (Node node in NodeMap)
             {
                 if (OpenSet.Contains(node) && node != StartNode && node != GoalNode)
@@ -338,9 +359,6 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     node.Set = Set.Closed;
                 }
             }
-
-            watch.Stop();
-            ExcludedTime += watch.Elapsed;
         });
     }
 

@@ -93,6 +93,8 @@
                                  Style="{StaticResource MaterialDesignToolToggleListBox}">
                             <ListBoxItem Content="Dijkstra's Algorithm"
                                          Tag="0" />
+                            <ListBoxItem Content="Best-First Search"
+                                         Tag="2" />
                             <ListBoxItem Content="A* Algorithm"
                                          Tag="1" />
                         </ListBox>
@@ -117,7 +119,7 @@
                         <DataGridTemplateColumn Header="Time">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Time}" />
+                                    <TextBlock Text="{Binding Time, StringFormat=\{0:ss\\.fffffff\}}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -160,10 +162,8 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
                             <Style TargetType="{x:Type ContentPresenter}">
-                                <Setter Property="Canvas.Left"
-                                        Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
-                                <Setter Property="Canvas.Top"
-                                        Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
                             </Style>
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
@@ -187,7 +187,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!--#endregion-->
-                    <!--#region Tile Set -->
+                    <!--#region Tile Set-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -198,10 +198,8 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
                             <Style TargetType="{x:Type ContentPresenter}">
-                                <Setter Property="Canvas.Left"
-                                        Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
-                                <Setter Property="Canvas.Top"
-                                        Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
                             </Style>
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
@@ -225,7 +223,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!--#endregion-->
-                    <!--#region Tile Value -->
+                    <!--#region Tile Value-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -234,10 +232,8 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
                             <Style TargetType="{x:Type ContentPresenter}">
-                                <Setter Property="Canvas.Left"
-                                        Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
-                                <Setter Property="Canvas.Top"
-                                        Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
                             </Style>
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
@@ -285,7 +281,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!--#endregion-->
-                    <!--#region Tile Path -->
+                    <!--#region Tile Path-->
                     <Canvas CacheMode="BitmapCache">
                         <Path CacheMode="BitmapCache"
                               Data="{Binding PathData}"
