@@ -20,12 +20,6 @@ public static class AstarAlgorithm
                 }
             }
             return NodeMap;
-            //await SetStartEndPoint();
-
-            //PathData = "";
-            //OpenSet.Clear();
-            //CloseSet.Clear();
-            //Nodes = new();
         });
     }
 
@@ -111,8 +105,6 @@ public static class AstarAlgorithm
         int dx = Math.Abs(firstNode.X - secondNode.X);
         int dy = Math.Abs(firstNode.Y - secondNode.Y);
         return await new ValueTask<double>(Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)));
-        //(Math.Min(dx, dy) * Math.Sqrt(2) + Math.Abs(dx - dy)); Chebyshev distance
-        //(Math.Round(D * Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)), 2));
     }
 
     public static async ValueTask<double> MovementCost(Node firstNode, Node secondNode, bool IsDiagonalEnabled, bool DistanceType)

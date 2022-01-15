@@ -72,6 +72,8 @@
                     <ToolBar Style="{DynamicResource MaterialDesignToolBar}">
                         <Button Command="{Binding StartCommand}"
                                 Content="{mD:PackIcon Kind=Play}" />
+                        <Button Command="{Binding PauseCommand}"
+                                Content="{mD:PackIcon Kind=Pause}" />
                         <Separator />
                         <TextBox Padding="5"
                                  VerticalAlignment="Center"

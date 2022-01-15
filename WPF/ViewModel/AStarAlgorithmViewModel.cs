@@ -1,6 +1,6 @@
 ﻿using MaterialDesignThemes.Wpf;
 using System.Diagnostics;
-using System.Windows.Forms;
+using System.Threading;
 using static WPF.AstarAlgorithm;
 using static WPF.DataTransaction;
 using static WPF.MazeManagement;
@@ -34,6 +34,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
     #region Visualization Constructors
 
     public DelegateCommand StartCommand { get; set; }
+    private readonly PauseTokenSource PauseTokenSource = new();
+    public DelegateCommand PauseCommand { get; set; }
     public DelegateCommand CalculateCommand { get; set; }
     public DelegateCommand WallToRoadCommand { get; set; }
     public DelegateCommand SetConditionCommand { get; set; }
@@ -48,7 +50,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     private bool CanCondition() => NodeMap[0, 0] != null;
 
-    private bool CanStart() => NodeMap[0, 0] != null;
+    private bool StartIsRunning { get; set; }
+
+    private bool CanStart() => (NodeMap[0, 0] != null && !StartIsRunning) || PauseTokenSource.IsPaused().Result;
+
+    private bool CanPause() => NodeMap[0, 0] != null && !CanStart();
 
     public ObservableCollection<Node> Nodes { get; set; } = new();
     public ObservableCollection<PathScore> PathScore { get; set; } = new();
@@ -66,6 +72,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             GetNodesAsync();
         }
     }
+
     public int Delay { get; set; } = 20;
     private List<long> StepTimeSpan { get; set; }
     private Stopwatch Watch = new();
@@ -77,7 +84,9 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     public AStarAlgorithmViewModel()
     {
-        StartCommand = new DelegateCommand(async () => await StartAsync(), CanStart);
+        StartCommand = new DelegateCommand(async () => await StartAsync(PauseTokenSource.Token, CancellationToken.None), CanStart);
+        PauseCommand = new DelegateCommand(async () => await PauseAsync(CancellationToken.None), CanPause);
+
         CalculateCommand = new DelegateCommand(async () =>
         {
             await DialogHost.Show(new NewMapControl { }, "AStarDialog");
@@ -149,98 +158,122 @@ public class AStarAlgorithmViewModel : BaseViewModel
         });
     }
 
-    private async Task StartAsync()
+    private async Task StartAsync(PauseToken pause, CancellationToken token)
     {
-        await Task.Run(async () =>
+        if (await PauseTokenSource.IsPaused(token))
         {
-            await ClearNodeNeighbors();
-            await GetNeighborsAsync(NodeMap, IsDiagonalEnabled);
-            await ResetValuesAsync(NodeMap);
-            await SetStartEndPoint();
-            await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
-
-            PathData = "";
-            OpenSet.Clear();
-            CloseSet.Clear();
-            StepTimeSpan = new();
-
-            // The set of discovered nodes that may need to be (re-)expanded.
-            // Initially, only the start node is known.
-            // This is usually implemented as a min-heap or priority queue rather than a hash-set.
-            // openSet:= {start}
-            OpenSet.Add(StartNode);
-            while (OpenSet.Count > 0)
+            await PauseTokenSource.ResumeAsync(token);
+            return;
+        }
+        await RunCommandAsync(() => StartIsRunning, async () =>
+        {
+            try
             {
-                Watch = new();
-                Watch.Start();
-                // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
-                // current:= the node in openSet having the lowest fScore[] value
-                switch (AlgorithemType)
-                {
-                    case 2:
-                        await CheckForLowestHAsync();
-                        break;
-                    default:
-                        await CheckForLowestFAsync();
-                        break;
-                }
+                await ClearNodeNeighbors();
+                await GetNeighborsAsync(NodeMap, IsDiagonalEnabled);
+                await ResetValuesAsync(NodeMap);
+                await SetStartEndPoint();
+                await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
 
-                // if current = goal
-                // return reconstruct_path(cameFrom, current)
-                if (Current == GoalNode)
+                PathData = "";
+                OpenSet.Clear();
+                CloseSet.Clear();
+                StepTimeSpan = new();
+
+                // The set of discovered nodes that may need to be (re-)expanded.
+                // Initially, only the start node is known.
+                // This is usually implemented as a min-heap or priority queue rather than a hash-set.
+                // openSet:= {start}
+                OpenSet.Add(StartNode);
+                while (OpenSet.Count > 0)
                 {
-                    await FindPathAsync();
-                    await CheckOpenSetCloseSetPathAsync();
+                    token.ThrowIfCancellationRequested();
+                    await pause.PauseIfRequestedAsync();
+
+                    Watch = new();
+                    Watch.Start();
+                    // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
+                    // current:= the node in openSet having the lowest fScore[] value
+                    switch (AlgorithemType)
+                    {
+                        case 2:
+                            await CheckForLowestHAsync();
+                            break;
+
+                        default:
+                            await CheckForLowestFAsync();
+                            break;
+                    }
+
+                    // if current = goal
+                    // return reconstruct_path(cameFrom, current)
+                    if (Current == GoalNode)
+                    {
+                        await FindPathAsync();
+                        await CheckOpenSetCloseSetPathAsync();
+
+                        Watch.Stop();
+                        StepTimeSpan.Add(Watch.ElapsedTicks);
+
+                        await CalculatePathValueAsync();
+                        return;
+                    }
+
+                    // openSet.Remove(current)
+                    OpenSet.Remove(Current);
+                    // for each neighbor of current
+                    foreach (Node neighbor in Current.Neighbors)
+                    {
+                        if (!CloseSet.Contains(neighbor) && !neighbor.IsObstacle)
+                        {
+                            // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
+                            // tentative_gScore:= gScore[current] + d(current, neighbor)
+                            var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType);
+
+                            if (tentativeGScore < neighbor.G)
+                            {
+                                // This path to neighbor is better than any previous one. Record it!
+                                neighbor.CameFrom = Current;
+                                neighbor.G = Math.Round(tentativeGScore, 2);
+                                switch (AlgorithemType)
+                                {
+                                    case 0:
+                                        neighbor.F = 0;
+                                        break;
+
+                                    case 1:
+                                        //http://theory.stanford.edu/~amitp/GameProgramming/Variations.html
+                                        //f(p) = g(p) + w * h(p)
+                                        neighbor.F = Math.Round(tentativeGScore + neighbor.H * (IsConditionEnabled ? (int)neighbor.Condition : 1), 2);
+                                        break;
+                                }
+                                if (!OpenSet.Contains(neighbor))
+                                {
+                                    OpenSet.Add(neighbor);
+                                }
+                            }
+                        }
+                        await CheckOpenSetCloseSetPathAsync();
+                        await FindPathAsync();
+                    }
 
                     Watch.Stop();
                     StepTimeSpan.Add(Watch.ElapsedTicks);
 
-                    await CalculatePathValueAsync();
-                    return;
+                    await Task.Delay(Delay);
                 }
-
-                // openSet.Remove(current)
-                OpenSet.Remove(Current);
-                // for each neighbor of current
-                foreach (Node neighbor in Current.Neighbors)
-                {
-                    if (!CloseSet.Contains(neighbor) && !neighbor.IsObstacle)
-                    {
-                        // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
-                        // tentative_gScore:= gScore[current] + d(current, neighbor)
-                        var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType) + (IsConditionEnabled? (int)neighbor.Condition : 0);
-
-                        if (tentativeGScore < neighbor.G)
-                        {
-                            // This path to neighbor is better than any previous one. Record it!
-                            neighbor.CameFrom = Current;
-                            neighbor.G = Math.Round(tentativeGScore, 2);
-                            switch (AlgorithemType)
-                            {
-                                case 0:
-                                    neighbor.F = 0;
-                                    break;
-
-                                case 1:
-                                    neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2);
-                                    break;
-                            }
-                            if (!OpenSet.Contains(neighbor))
-                            {
-                                OpenSet.Add(neighbor);
-                            }
-                        }
-                    }
-                    await CheckOpenSetCloseSetPathAsync();
-                    await FindPathAsync();
-                }
-
-                Watch.Stop();
-                StepTimeSpan.Add(Watch.ElapsedTicks);
-
-                await Task.Delay(Delay);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: {0}", e);
+                throw;
             }
         });
+    }
+
+    private async Task PauseAsync(CancellationToken token)
+    {
+        await PauseTokenSource.PauseAsync(token);
     }
 
     private async Task CheckForLowestFAsync()
@@ -255,6 +288,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             }
         });
     }
+
     private async Task CheckForLowestHAsync()
     {
         await Task.Run(() =>
@@ -329,9 +363,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 case 0:
                     pathScore.Algorithm = "Dijkstra's Algorithm";
                     break;
+
                 case 1:
                     pathScore.Algorithm = "A* Algorithm";
                     break;
+
                 case 2:
                     pathScore.Algorithm = "Best-First Search";
                     break;
