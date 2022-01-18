@@ -5,6 +5,7 @@
         xmlns:local="clr-namespace:WPF"
         xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
         xmlns:view="clr-namespace:WPF.View"
         xmlns:viewModel="clr-namespace:WPF.ViewModel"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
@@ -219,18 +220,82 @@
                                 <!--#endregion-->
                             </DocumentViewer>
                         </TabItem>
-                        <TabItem Header="{mD:PackIcon Kind=Code,
+                        <TabItem Header="{mD:PackIcon Kind=Application,
                                                       Size=24}"
                                  Style="{StaticResource MaterialDesignNavigationRailTabItem}"
                                  ToolTip="A* Pathfinding Algorithm">
                             <view:PathfindingVisualizationPage />
+                        </TabItem>
+                        <TabItem Header="{mD:PackIcon Kind=Code,
+                                                      Size=24}"
+                                 Style="{StaticResource MaterialDesignNavigationRailTabItem}"
+                                 ToolTip="A* Pathfinding Algorithm">
+                            <mdxam:MarkdownScrollViewer xml:space="preserve">
+	                            ```cs                           
+                                        // The set of discovered nodes that may need to be (re-)expanded.
+                                        // Initially, only the start node is known.
+                                        // This is usually implemented as a min-heap or priority queue rather than a hash-set.
+                                        // openSet:= {start}
+                                        OpenSet.Add(StartNode);
+                                        while (OpenSet.Count &gt; 0)
+                                        {
+
+                                            // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
+                                            // current:= the node in openSet having the lowest fScore[] value
+                                            await CheckForLowestFAsync();
+
+
+                                            // if current = goal
+                                            // return reconstruct_path(cameFrom, current)
+                                            if (Current == GoalNode)
+                                            {
+                                                await FindPathAsync();
+                                                await CheckOpenSetCloseSetPathAsync();
+                                                await CalculatePathValueAsync();
+                                                return;
+                                            }
+
+                                            // openSet.Remove(current)
+                                            OpenSet.Remove(Current);
+                                            // for each neighbor of current
+                                            foreach (Node neighbor in Current.Neighbors)
+                                            {
+                                                if (!CloseSet.Contains(neighbor) &amp;&amp; !neighbor.IsObstacle)
+                                                {
+                                                    // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
+                                                    // tentative_gScore:= gScore[current] + d(current, neighbor)
+                                                    var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType);
+
+                                                    if (tentativeGScore &lt; neighbor.G)
+                                                    {
+                                                        // This path to neighbor is better than any previous one. Record it!
+                                                        neighbor.CameFrom = Current;
+                                                        neighbor.G = Math.Round(tentativeGScore, 2);
+
+                                                        //http://theory.stanford.edu/~amitp/GameProgramming/Variations.html
+                                                        //f(p) = g(p) + w * h(p)
+                                                        neighbor.F = Math.Round(tentativeGScore + neighbor.H * (IsConditionEnabled ? (int)neighbor.Condition : 1), 2);
+                                                        break;
+                                                        
+                                                        if (!OpenSet.Contains(neighbor))
+                                                        {
+                                                            OpenSet.Add(neighbor);
+                                                        }
+                                                    }
+                                                }
+                                                await CheckOpenSetCloseSetPathAsync();
+                                                await FindPathAsync();
+                                            }
+                                        }
+                                ```
+	                        </mdxam:MarkdownScrollViewer>
                         </TabItem>
                         <TabItem Header="{mD:PackIcon Kind=Paper,
                                                       Size=24}"
                                  Style="{StaticResource MaterialDesignNavigationRailTabItem}"
                                  ToolTip="IEEE Conference Paper">
                             <wv2:WebView2 x:Name="webView2"
-                                          Source="https://www.google.com"/>
+                                          Source="https://www.google.com" />
                         </TabItem>
                     </TabControl>
                 </Grid>

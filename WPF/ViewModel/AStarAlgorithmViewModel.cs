@@ -28,13 +28,14 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public bool IsConditionEnabled { get; set; }
     public string PathData { get; set; } = string.Empty;
     public int AlgorithemType { get; set; } = 1;
+    public int EditNodeType { get; set; } = 0;
 
     #endregion Algorithem Constructors
 
     #region Visualization Constructors
 
     public DelegateCommand StartCommand { get; set; }
-    private readonly PauseTokenSource PauseTokenSource = new();
+    private new readonly PauseTokenSource PauseTokenSource = new();
     public DelegateCommand PauseCommand { get; set; }
     public DelegateCommand CalculateCommand { get; set; }
     public DelegateCommand WallToRoadCommand { get; set; }
@@ -44,6 +45,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     public DelegateCommand RemoveMazeCommand { get; set; }
     public DelegateCommand SaveCommand { get; set; }
     public DelegateCommand LoadCommand { get; set; }
+    public DelegateCommand<Node> EditNodeMapCommand { get; set; }
 
     //public DelegateCommand GetNodeAxis { get; set; }
     private bool CanMaze() => NodeMap[0, 0] != null;
@@ -79,6 +81,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     private PathScore selectedPathScore = new();
     private readonly object _Nodeslock = new();
     private readonly object _PathScorelock = new();
+    private bool _IsClearMap;
 
     #endregion Visualization Constructors
 
@@ -94,18 +97,23 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 case 0:
                     NodeMap = await CalculateNodesAsync(NodeMap);
+                    await ClearSetNodeMapAsync();
+                    _IsClearMap = true;
                     PathData = string.Empty;
                     break;
 
                 case 1:
                     NodeMap = await CalculateNodesAsync(NodeMap);
                     await AddMazeAsync(NodeMap);
+                    await ClearSetNodeMapAsync();
+                    _IsClearMap = true;
                     PathData = string.Empty;
                     break;
 
                 case 2:
                     NodeMap = await CalculateNodesAsync(NodeMap);
                     await AddStreetAsync(NodeMap);
+                    _IsClearMap = false;
                     PathData = string.Empty;
                     break;
             }
@@ -131,6 +139,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
                 await GetNodesAsync();
             }
         });
+
+        EditNodeMapCommand = new DelegateCommand<Node>(async (o) => await EditNodeMapAsync(o));
         //GetNodeAxis = new DelegateCommand(async () => await GetAxisAsync());
         NodeMap = new Node[X, Y];
         BindingOperations.EnableCollectionSynchronization(Nodes, _Nodeslock);
@@ -143,13 +153,13 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            NodeMap[StartPointX, StartPointY].Style = AStarSet.Start;
+            NodeMap[StartPointX, StartPointY].Style = _IsClearMap ? AStarSet.EmptyStart : AStarSet.Start;
             NodeMap[StartPointX, StartPointY].IsObstacle = false;
             NodeMap[StartPointX, StartPointY].Condition = ExtraCondition.Road;
             NodeMap[StartPointX, StartPointY].G = 0;
             NodeMap[StartPointX, StartPointY].F = 0;
 
-            NodeMap[EndPointX, EndPointY].Style = AStarSet.End;
+            NodeMap[EndPointX, EndPointY].Style = _IsClearMap ? AStarSet.EmptyEnd : AStarSet.End;
             NodeMap[EndPointX, EndPointY].IsObstacle = false;
             NodeMap[EndPointX, EndPointY].Condition = ExtraCondition.Road;
 
@@ -158,13 +168,55 @@ public class AStarAlgorithmViewModel : BaseViewModel
         });
     }
 
+    private async Task EditNodeMapAsync(Node o)
+    {
+        switch (EditNodeType)
+        {
+            case 0:
+                if (o.IsObstacle)
+                {
+                    o.Style = AStarSet.EmptyGround;
+                    o.IsObstacle = false;
+                    break;
+                }
+                o.Style = AStarSet.EmptyObstacle;
+                o.IsObstacle = true;
+                break;
+
+            case 1:
+
+                NodeMap[StartPointX, StartPointY].Style = AStarSet.EmptyGround;
+                NodeMap[StartPointX, StartPointY].IsObstacle = false;
+                NodeMap[StartPointX, StartPointY].Condition = ExtraCondition.Clear;
+                NodeMap[StartPointX, StartPointY].G = double.PositiveInfinity;
+                NodeMap[StartPointX, StartPointY].F = double.PositiveInfinity;
+
+                StartPointX = o.X;
+                StartPointY = o.Y;
+                await SetStartEndPoint();
+                break;
+
+            case 2:
+
+                NodeMap[EndPointX, EndPointY].Style = AStarSet.EmptyGround;
+                NodeMap[EndPointX, EndPointY].IsObstacle = false;
+                NodeMap[EndPointX, EndPointY].Condition = ExtraCondition.Clear;
+
+                EndPointX = o.X;
+                EndPointY = o.Y;
+                await SetStartEndPoint();
+                break;
+        }
+    }
+
     private async Task StartAsync(PauseToken pause, CancellationToken token)
     {
-        if (await PauseTokenSource.IsPaused(token))
+        if (await PauseTokenSource.IsPaused())
         {
-            await PauseTokenSource.ResumeAsync(token);
+            await PauseTokenSource.ResumeAsync();
             return;
         }
+
         await RunCommandAsync(() => StartIsRunning, async () =>
         {
             try
@@ -196,10 +248,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     // current:= the node in openSet having the lowest fScore[] value
                     switch (AlgorithemType)
                     {
+                        // BFS
                         case 2:
                             await CheckForLowestHAsync();
                             break;
-
+                        // A* and Dijkstra's But Dijkstra's F here is always infinity so it checks everything
                         default:
                             await CheckForLowestFAsync();
                             break;
@@ -228,7 +281,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                         {
                             // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
                             // tentative_gScore:= gScore[current] + d(current, neighbor)
-                            var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType);
+                            var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType, IsConditionEnabled);
 
                             if (tentativeGScore < neighbor.G)
                             {
@@ -238,13 +291,13 @@ public class AStarAlgorithmViewModel : BaseViewModel
                                 switch (AlgorithemType)
                                 {
                                     case 0:
-                                        neighbor.F = 0;
+                                        neighbor.F = double.PositiveInfinity;
                                         break;
 
                                     case 1:
                                         //http://theory.stanford.edu/~amitp/GameProgramming/Variations.html
                                         //f(p) = g(p) + w * h(p)
-                                        neighbor.F = Math.Round(tentativeGScore + neighbor.H * (IsConditionEnabled ? (int)neighbor.Condition : 1), 2);
+                                        neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2); //*(IsConditionEnabled ? (int)neighbor.Condition : 1)
                                         break;
                                 }
                                 if (!OpenSet.Contains(neighbor))
@@ -273,7 +326,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
     private async Task PauseAsync(CancellationToken token)
     {
-        await PauseTokenSource.PauseAsync(token);
+        await PauseTokenSource.PauseAsync();
     }
 
     private async Task CheckForLowestFAsync()
@@ -410,6 +463,20 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     case Set.Open:
                         node.Set = Set.Undefined;
                         break;
+                }
+            }
+        });
+    }
+
+    private async Task ClearSetNodeMapAsync()
+    {
+        await Task.Run(() =>
+        {
+            foreach (var node in NodeMap)
+            {
+                if (node.Style is not AStarSet.Maze)
+                {
+                    node.Style = AStarSet.EmptyGround;
                 }
             }
         });

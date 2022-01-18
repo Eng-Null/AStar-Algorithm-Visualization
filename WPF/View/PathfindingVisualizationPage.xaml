@@ -89,6 +89,19 @@
                                   IsChecked="{Binding DistanceType}" />
                         <CheckBox x:Name="ShowValues"
                                   Content="Show Values" />
+                        <CheckBox x:Name="SetWalls"
+                                  Content="Enable Edit" />
+                        <ListBox IsEnabled="{Binding ElementName=SetWalls, Path=IsChecked}"
+                                 SelectedValue="{Binding EditNodeType}"
+                                 SelectedValuePath="Tag"
+                                 Style="{StaticResource MaterialDesignToolToggleListBox}">
+                            <ListBoxItem Content="Wall"
+                                         Tag="0" />
+                            <ListBoxItem Content="Start Point"
+                                         Tag="1" />
+                            <ListBoxItem Content="End Point"
+                                         Tag="2" />
+                        </ListBox>
                         <Separator />
                         <ListBox SelectedValue="{Binding AlgorithemType}"
                                  SelectedValuePath="Tag"
@@ -189,13 +202,12 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!--#endregion-->
+
                     <!--#region Tile Set-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas Width="8000"
-                                        Height="8000"
-                                        CacheMode="BitmapCache" />
+                                <Canvas CacheMode="BitmapCache" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
@@ -225,6 +237,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!--#endregion-->
+
                     <!--#region Tile Value-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
@@ -283,6 +296,35 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!--#endregion-->
+
+                    <!--#region SetWalls-->
+                    <ItemsControl ItemsSource="{Binding Nodes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Visibility="{Binding IsChecked, ElementName=SetWalls, Converter={valueConverter:BoolToVisibilityValueConverter}}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="{x:Type ContentPresenter}">
+                                <Setter Property="Canvas.Left" Value="{Binding X, Converter={local:CoordinatesToPixelValueConverter}}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y, Converter={local:CoordinatesToPixelValueConverter}}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="White"
+                                        BorderThickness="1">
+                                    <Button Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                            Command="{Binding DataContext.EditNodeMapCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}"
+                                            CommandParameter="{Binding}"
+                                            Opacity="0" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!--#endregion-->
+
                     <!--#region Tile Path-->
                     <Canvas CacheMode="BitmapCache">
                         <Path CacheMode="BitmapCache"

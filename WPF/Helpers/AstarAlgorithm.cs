@@ -107,8 +107,12 @@ public static class AstarAlgorithm
         return await new ValueTask<double>(Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2)));
     }
 
-    public static async ValueTask<double> MovementCost(Node firstNode, Node secondNode, bool IsDiagonalEnabled, bool DistanceType)
+    public static async ValueTask<double> MovementCost(Node firstNode, Node secondNode, bool IsDiagonalEnabled, bool DistanceType, bool IsConditionEnabled)
     {
-        return IsDiagonalEnabled ? await EuclideanDistance(firstNode, secondNode) : DistanceType ? await EuclideanDistance(firstNode, secondNode) : await ManhattanDistance(firstNode, secondNode);
+        return IsDiagonalEnabled ? 
+            await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) : 
+            DistanceType ?
+            await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) : 
+            await ManhattanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0);
     }
 }

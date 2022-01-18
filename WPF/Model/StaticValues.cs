@@ -2,30 +2,10 @@
 {
     public class StaticValues : BaseViewModel
     {
-        private static int x = 11;
-        private static int y = 11;
+        public static int TileSize { get; set; } = 64;
 
-        public static int TileSize { get; set; } = 20;
-
-        public static int X
-        {
-            get => x;
-            set
-            {
-                x = value;
-                EndPointX = value - 2;
-            }
-        }
-
-        public static int Y
-        {
-            get => y;
-            set
-            {
-                y = value;
-                EndPointY = value - 2;
-            }
-        }
+        public static int X { get; set; } = 21;
+        public static int Y { get; set; } = 9;
 
         public static int StartPointX { get; set; } = 1;
         public static int StartPointY { get; set; } = 1;

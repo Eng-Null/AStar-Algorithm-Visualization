@@ -42,6 +42,11 @@ public class SetToBlockValueConverter : BaseValueConverter<SetToBlockValueConver
             AStarSet.RiverTR => $"/Img/TopRightRiver.png",
             AStarSet.RiverBL => $"/Img/BottomLeftRiver.png",
             AStarSet.RiverBR => $"/Img/BottomRightRiver.png",
+
+            AStarSet.EmptyGround => $"/Img/GroundEmpty.png",
+            AStarSet.EmptyStart => $"/Img/EmptyStart.png",
+            AStarSet.EmptyEnd => $"/Img/EmptyEnd.png",
+            AStarSet.EmptyObstacle => $"/Img/EmptyObstacle.png",
             _ => "",
         };
     }

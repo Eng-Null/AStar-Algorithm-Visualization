@@ -40,4 +40,10 @@ public enum AStarSet
     RiverTR = 30,
     RiverBL = 31,
     RiverBR = 32,
+
+    //Empty Map
+    EmptyStart = 33,
+    EmptyEnd = 34,
+    EmptyGround = 35,
+    EmptyObstacle = 36
 }
