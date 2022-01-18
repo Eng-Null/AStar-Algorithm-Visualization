@@ -155,13 +155,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
         {
             NodeMap[StartPointX, StartPointY].Style = _IsClearMap ? AStarSet.EmptyStart : AStarSet.Start;
             NodeMap[StartPointX, StartPointY].IsObstacle = false;
-            NodeMap[StartPointX, StartPointY].Condition = ExtraCondition.Road;
             NodeMap[StartPointX, StartPointY].G = 0;
             NodeMap[StartPointX, StartPointY].F = 0;
 
             NodeMap[EndPointX, EndPointY].Style = _IsClearMap ? AStarSet.EmptyEnd : AStarSet.End;
             NodeMap[EndPointX, EndPointY].IsObstacle = false;
-            NodeMap[EndPointX, EndPointY].Condition = ExtraCondition.Road;
 
             StartNode = NodeMap[StartPointX, StartPointY];
             GoalNode = NodeMap[EndPointX, EndPointY];

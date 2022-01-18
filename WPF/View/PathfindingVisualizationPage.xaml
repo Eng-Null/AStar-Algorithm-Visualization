@@ -188,8 +188,7 @@
                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            CacheMode="BitmapCache"
                                            Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
-                                           Stretch="UniformToFill"
-                                           ToolTip="{Binding ToolTip}" />
+                                           Stretch="UniformToFill" />
                                     <!--<TextBlock FontSize="10"
                                                Text="{Binding ToolTip}" />-->
                                     <!--<mD:PackIcon HorizontalAlignment="Center"
@@ -223,8 +222,7 @@
                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            CacheMode="BitmapCache"
                                            Opacity="0.2"
-                                           Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}"
-                                           ToolTip="{Binding ToolTip}" />
+                                           Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}" />
                                     <!--<TextBlock FontSize="10"
                                                Text="{Binding ToolTip}" />-->
                                     <!--<mD:PackIcon HorizontalAlignment="Center"
@@ -258,6 +256,13 @@
                                     <Viewbox Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                              Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}">
                                         <Grid Background="#662D2D2D">
+                                            <Grid.ToolTip>
+                                                <ToolTip Padding="0" >
+                                                    <StackPanel>
+                                                        <local:ToolTipControl />
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Grid.ToolTip>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"
                                                                   MinWidth="32" />
@@ -297,7 +302,7 @@
                     </ItemsControl>
                     <!--#endregion-->
 
-                    <!--#region SetWalls-->
+                    <!--#region Edit NodeMap-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
