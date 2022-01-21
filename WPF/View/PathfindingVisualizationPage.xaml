@@ -171,8 +171,7 @@
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Canvas Width="8000"
-                                        Height="8000"
-                                        CacheMode="BitmapCache" />
+                                        Height="8000" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
@@ -186,7 +185,6 @@
                                 <Grid>
                                     <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
-                                           CacheMode="BitmapCache"
                                            Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
                                            Stretch="UniformToFill" />
                                     <!--<TextBlock FontSize="10"
@@ -206,7 +204,7 @@
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas CacheMode="BitmapCache" />
+                                <Canvas />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
@@ -220,7 +218,6 @@
                                 <Grid>
                                     <Image Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
-                                           CacheMode="BitmapCache"
                                            Opacity="0.2"
                                            Source="{Binding Set, Converter={local:AStarSetToColorValueConverter}}" />
                                     <!--<TextBlock FontSize="10"
@@ -237,6 +234,7 @@
                     <!--#endregion-->
 
                     <!--#region Tile Value-->
+
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -251,55 +249,24 @@
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="White"
-                                        BorderThickness="1">
-                                    <Viewbox Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
-                                             Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}">
-                                        <Grid Background="#662D2D2D">
-                                            <Grid.ToolTip>
-                                                <ToolTip Padding="0" >
-                                                    <StackPanel>
-                                                        <local:ToolTipControl />
-                                                    </StackPanel>
-                                                </ToolTip>
-                                            </Grid.ToolTip>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"
-                                                                  MinWidth="32" />
-                                                <ColumnDefinition Width="*"
-                                                                  MinWidth="32" />
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="*"
-                                                               MinHeight="32" />
-                                                <RowDefinition Height="*"
-                                                               MinHeight="32" />
-                                            </Grid.RowDefinitions>
-                                            <StackPanel Margin="4,4,0,0"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Top">
-                                                <TextBlock Text="{Binding G}" />
+                                <Grid Background="Black"
+                                      Opacity="0.1">
+                                    <Grid.ToolTip>
+                                        <ToolTip Padding="0">
+                                            <StackPanel>
+                                                <local:ToolTipControl />
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1"
-                                                        Margin="0,4,4,0"
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Top">
-                                                <TextBlock Text="{Binding H}" />
-                                            </StackPanel>
-                                            <StackPanel Grid.Row="1"
-                                                        Grid.Column="1"
-                                                        Margin="0,0,4,4"
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Bottom">
-                                                <TextBlock Foreground="{StaticResource SecondaryHueMidBrush}"
-                                                           Text="{Binding F}" />
-                                            </StackPanel>
-                                        </Grid>
-                                    </Viewbox>
-                                </Border>
+                                        </ToolTip>
+                                    </Grid.ToolTip>
+                                    <Border Width="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
+                                            BorderBrush="White"
+                                            BorderThickness="1" />
+                                </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
                     <!--#endregion-->
 
                     <!--#region Edit NodeMap-->
@@ -331,9 +298,8 @@
                     <!--#endregion-->
 
                     <!--#region Tile Path-->
-                    <Canvas CacheMode="BitmapCache">
-                        <Path CacheMode="BitmapCache"
-                              Data="{Binding PathData}"
+                    <Canvas>
+                        <Path Data="{Binding PathData}"
                               Stroke="#CC38888E"
                               StrokeThickness="4" />
                     </Canvas>

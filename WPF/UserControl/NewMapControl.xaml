@@ -142,18 +142,11 @@
                 <ListBox SelectedValue="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                          SelectedValuePath="Content"
                          Style="{StaticResource MaterialDesignToolToggleListBox}">
+
                     <ListBoxItem Width="50"
                                  Height="34"
                                  HorizontalContentAlignment="Center"
-                                 Content="8" />
-                    <ListBoxItem Width="50"
-                                 Height="34"
-                                 HorizontalContentAlignment="Center"
-                                 Content="16" />
-                    <ListBoxItem Width="50"
-                                 Height="34"
-                                 HorizontalContentAlignment="Center"
-                                 Content="20" />
+                                 Content="24" />
                     <ListBoxItem Width="50"
                                  Height="34"
                                  HorizontalContentAlignment="Center"

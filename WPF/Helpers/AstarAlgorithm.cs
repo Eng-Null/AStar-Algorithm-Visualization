@@ -1,4 +1,5 @@
 ﻿namespace WPF;
+
 using static WPF.StaticValues;
 
 public static class AstarAlgorithm
@@ -8,11 +9,12 @@ public static class AstarAlgorithm
         return await Task.Run(() =>
         {
             NodeMap = new Node[X, Y];
+
             for (int i = 0; i < X; i++)
             {
                 for (int j = 0; j < Y; j++)
                 {
-                    NodeMap[i, j] = new Node
+                    NodeMap[i,j] = new Node
                     {
                         X = i,
                         Y = j,
@@ -46,51 +48,49 @@ public static class AstarAlgorithm
                 {
                     if (i < X - 1)
                     {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j]);
+                        NodeMap[i,j].Neighbors.Add(NodeMap[i + 1,j]);
                     }
 
                     if (i > 0)
                     {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j]);
+                        NodeMap[i,j].Neighbors.Add(NodeMap[i - 1,j]);
                     }
 
                     if (j < Y - 1)
                     {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i, j + 1]);
+                        NodeMap[i,j].Neighbors.Add(NodeMap[i,j + 1]);
                     }
 
                     if (j > 0)
                     {
-                        NodeMap[i, j].Neighbors.Add(NodeMap[i, j - 1]);
+                        NodeMap[i,j].Neighbors.Add(NodeMap[i,j - 1]);
                     }
                     if (IsDiagonalEnabled)
                     {
                         // diagonal Pathfinding
                         if (i > 0 && j > 0)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j - 1]);
+                            NodeMap[i,j].Neighbors.Add(NodeMap[i - 1,j - 1]);
                         }
 
                         if (i < X - 1 && j > 0)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j - 1]);
+                            NodeMap[i,j].Neighbors.Add(NodeMap[i + 1,j - 1]);
                         }
 
                         if (i > 0 && j < Y - 1)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i - 1, j + 1]);
+                            NodeMap[i,j].Neighbors.Add(NodeMap[i - 1,j + 1]);
                         }
 
                         if (i < X - 1 && j < Y - 1)
                         {
-                            NodeMap[i, j].Neighbors.Add(NodeMap[i + 1, j + 1]);
+                            NodeMap[i,j].Neighbors.Add(NodeMap[i + 1,j + 1]);
                         }
                     }
                 });
             });
         });
-
-
     }
 
     public static async ValueTask<double> ManhattanDistance(Node firstNode, Node secondNode)
@@ -109,10 +109,10 @@ public static class AstarAlgorithm
 
     public static async ValueTask<double> MovementCost(Node firstNode, Node secondNode, bool IsDiagonalEnabled, bool DistanceType, bool IsConditionEnabled)
     {
-        return IsDiagonalEnabled ? 
-            await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) : 
+        return IsDiagonalEnabled ?
+            await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) :
             DistanceType ?
-            await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) : 
+            await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) :
             await ManhattanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0);
     }
 }

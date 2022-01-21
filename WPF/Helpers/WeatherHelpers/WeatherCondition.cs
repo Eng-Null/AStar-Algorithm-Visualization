@@ -7,16 +7,16 @@ public static class WeatherCondition
     public static async Task<Node[,]> AddWeatherConditionAsync(Node[,] NodeMap)
     {
         return await Task.Run(async () =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (!node.IsObstacle && !node.IsRoad)
-                {
-                    node.Condition = await RandomEnumValue();
-                }
-            }
-            return NodeMap;
-        });
+       {
+           foreach (var node in NodeMap)
+           {
+               if (!node.IsObstacle && !node.IsRoad)
+               {
+                   node.Condition = await RandomEnumValue();
+               }
+           }
+           return NodeMap;
+       });
     }
 
     public static async Task<Node[,]> RemoveWeatherConditionAsync(Node[,] NodeMap)

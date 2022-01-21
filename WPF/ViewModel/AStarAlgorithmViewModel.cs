@@ -71,11 +71,10 @@ public class AStarAlgorithmViewModel : BaseViewModel
             OpenSet = value.OpenSet;
             CloseSet = value.CloseSet;
             PathData = value.Path;
-            GetNodesAsync();
         }
     }
 
-    public int Delay { get; set; } = 20;
+    public int Delay { get; set; } = 5;
     private List<long> StepTimeSpan { get; set; }
     private Stopwatch Watch = new();
     private PathScore selectedPathScore = new();
@@ -269,11 +268,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
                         await CalculatePathValueAsync();
                         return;
                     }
-
+                    //TODO/NOTETOSELF: UPDATE NODEMAP instead of NODES and update NODES Value AT the END of each Loop
                     // openSet.Remove(current)
                     OpenSet.Remove(Current);
                     // for each neighbor of current
-                    foreach (Node neighbor in Current.Neighbors)
+                    Parallel.ForEach(Current.Neighbors,async neighbor => 
                     {
                         if (!CloseSet.Contains(neighbor) && !neighbor.IsObstacle)
                         {
@@ -306,7 +305,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
                         }
                         await CheckOpenSetCloseSetPathAsync();
                         await FindPathAsync();
-                    }
+                    });
 
                     Watch.Stop();
                     StepTimeSpan.Add(Watch.ElapsedTicks);
@@ -371,7 +370,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             Path.Clear();
             PathData = "";
             Node? temp = Current;
-            Path.Add(temp);
+            Path.Add(Current);
 
             //Drawing the path
             var middle = TileSize / 2;
@@ -437,13 +436,15 @@ public class AStarAlgorithmViewModel : BaseViewModel
         {
             foreach (Node node in NodeMap)
             {
-                if (OpenSet.Contains(node) && node != StartNode && node != GoalNode)
-                {
-                    node.Set = Set.Open;
-                }
                 if (CloseSet.Contains(node) && node != StartNode && node != GoalNode)
                 {
                     node.Set = Set.Closed;
+                    continue;
+                }
+                if (OpenSet.Contains(node) && node != StartNode && node != GoalNode)
+                {
+                    node.Set = Set.Open;
+                    continue;
                 }
             }
         });
@@ -487,6 +488,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
             foreach (var node in NodeMap)
             {
                 node.Neighbors.Clear();
+                node.CameFrom = null;
             }
         });
     }
@@ -495,12 +497,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
     {
         await Task.Run(() =>
         {
-            var temp = new ObservableCollection<Node>();
+            Nodes.Clear();
             foreach (var node in NodeMap)
             {
-                temp.Add(node);
+                Nodes.Add(node);
             }
-            Nodes = temp;
         });
     }
 

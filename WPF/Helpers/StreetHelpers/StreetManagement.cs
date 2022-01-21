@@ -1,4 +1,5 @@
 ﻿namespace WPF;
+
 using static WPF.StaticValues;
 
 public static class StreetManagement
@@ -298,22 +299,5 @@ public static class StreetManagement
     {
         Random? rnd = new();
         return await new ValueTask<decimal>((decimal)Math.Floor((rnd.NextDouble() * (max - min + 1)) + min));
-    }
-
-    public static async Task<Node[,]> RemoveStreetAsync(Node[,] NodeMap)
-    {
-        return await Task.Run(() =>
-        {
-            foreach (var node in NodeMap)
-            {
-                if (node.IsObstacle || node.IsRoad)
-                {
-                    node.Style = AStarSet.Undefined;
-                    node.IsObstacle = false;
-                    node.IsRoad = false;
-                }
-            }
-            return NodeMap;
-        });
     }
 }

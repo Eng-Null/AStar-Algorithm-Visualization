@@ -1,10 +1,10 @@
 ﻿namespace WPF;
+
 using static WPF.StaticValues;
 
 public static class MazeManagement
 {
     private static Node[,] NodeMap { get; set; }
-
 
     public static async Task<Node[,]> AddMazeAsync(Node[,] nodeMap)
     {
