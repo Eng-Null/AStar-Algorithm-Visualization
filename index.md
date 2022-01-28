@@ -24,7 +24,7 @@ Hence, the algorithm is capable of finding the shortest path between a given sou
 <p align="center">
   <img  src="https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/blob/gh-pages/oq7BnXeUq3.gif?raw=true" alt="Fig. 1. Dijkstra’s Algorithm">
 </p>
-<h5 align="center">Fig. 1. Dijkstra’s Algorithm</h1>
+<h5 align="center">Fig. 1. Dijkstra’s Algorithm</h5>
 
 
 Best-First Search is search algorithms that explore the graph by expanding the most promising node chosen according to a specified rule. As Judea Pearl described the BFS as estimating the node n by a “heuristic evaluation function F(n) which, in general, may depend on the description of n, the description of the goal, the information gathered by the search up to that point, and most importantly, on any extra knowledge about the problem domain.” [1][2] The figure below shows that Best-First Search finds the goal fast but is not the shortest or most optimal.
@@ -33,7 +33,7 @@ Best-First Search is search algorithms that explore the graph by expanding the m
 <p align="center">
   <img  src="https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/blob/gh-pages/0zv349K8P3.gif?raw=true" alt="Fig. 2. Best-First Search">
 </p>
-<h5 align="center">Fig. 2. Best-First Search</h1>
+<h5 align="center">Fig. 2. Best-First Search</h5>
 
 
 #### A.	Movement Cost
@@ -58,7 +58,7 @@ A* is an improvement of Dijkstra’s Algorithm that is optimized for a single de
 <p align="center">
   <img  src="https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/blob/gh-pages/m2OiMcD6Vy.gif?raw=true" alt="Fig. 3. A* ALGORITHM">
 </p>
-<h5 align="center">Fig. 3. A* ALGORITHM</h1>
+<h5 align="center">Fig. 3. A* ALGORITHM</h5>
 
 
 Dijkstra works well to find the shortest path, but it wastes time exploring directions that are not promising “fig. 2.” Best-First Search explores promising directions, but it may not find the shortest path as seen in “fig. 1.” The A* algorithm uses the actual distance from the start and the estimated distance to the goal “fig. 3.”
