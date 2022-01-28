@@ -167,6 +167,11 @@
                           HorizontalScrollBarVisibility="Auto">
                 <Grid>
                     <!--#region Tile Style-->
+                    <!--<Image Source="{Binding NodeMapImage}"
+                           Width="{Binding ElementName=Items, Path=ActualWidth}"
+                           Height="{Binding ElementName=Items,Path=ActualHeight}"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top" />-->
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -187,13 +192,11 @@
                                            Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                            Source="{Binding Style, Converter={valueConverter:SetToBlockValueConverter}}"
                                            Stretch="UniformToFill" />
-                                    <!--<TextBlock FontSize="10"
-                                               Text="{Binding ToolTip}" />-->
                                     <!--<mD:PackIcon HorizontalAlignment="Center"
-                                     VerticalAlignment="Center"
-                                     Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
-                                     Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
-                                     Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}" />-->
+                                                 VerticalAlignment="Center"
+                                                 Foreground="{Binding Condition, Converter={local:IconToBrushValueConverter}}"
+                                                 Kind="{Binding Condition, Converter={local:ConditionToIconValueConverter}}"
+                                                 Opacity="{Binding Set, Converter={local:ConditionToOpacityValueConverter}}" />-->
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -204,7 +207,7 @@
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas />
+                                <Canvas x:Name="Items" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
@@ -238,7 +241,7 @@
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas Visibility="{Binding IsChecked, ElementName=ShowValues, Converter={valueConverter:BoolToVisibilityValueConverter}}" />
+                                <Canvas Visibility="{Binding IsChecked, ElementName=ShowValues, Converter={local:BoolToVisibilityValueConverter}}" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
@@ -273,7 +276,7 @@
                     <ItemsControl ItemsSource="{Binding Nodes}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas Visibility="{Binding IsChecked, ElementName=SetWalls, Converter={valueConverter:BoolToVisibilityValueConverter}}" />
+                                <Canvas Visibility="{Binding IsChecked, ElementName=SetWalls, Converter={local:BoolToVisibilityValueConverter}}" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemContainerStyle>
@@ -290,7 +293,10 @@
                                             Height="{Binding Source={StaticResource StaticValues}, Path=TileSize}"
                                             Command="{Binding DataContext.EditNodeMapCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}"
                                             CommandParameter="{Binding}"
-                                            Opacity="0" />
+                                            Opacity="0">
+                                        <!--<MouseBinding MouseAction="RightClick"
+                                                      Command="{Binding AddMazeCommand, RelativeSource={RelativeSource PreviousData}}" />-->
+                                    </Button>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

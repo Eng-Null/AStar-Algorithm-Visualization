@@ -113,6 +113,6 @@ public static class AstarAlgorithm
             await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) :
             DistanceType ?
             await EuclideanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) :
-            await ManhattanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0);
+            await ManhattanDistance(firstNode, secondNode) + (IsConditionEnabled ? (int)secondNode.Condition : 0) ;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace WPF.ValueConverter;
+﻿namespace WPF;
 
 internal class BoolToVisibilityValueConverter : BaseValueConverter<BoolToVisibilityValueConverter>
 {

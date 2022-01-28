@@ -1,12 +1,14 @@
 ﻿using MaterialDesignThemes.Wpf;
 using System.Diagnostics;
 using System.Threading;
+using System.Windows.Media.Imaging;
 using static WPF.AstarAlgorithm;
 using static WPF.DataTransaction;
 using static WPF.MazeManagement;
 using static WPF.StaticValues;
 using static WPF.StreetManagement;
 using static WPF.WeatherCondition;
+using static WPF.NodeMapDrawing;
 
 namespace WPF.ViewModel;
 //https://en.wikipedia.org/wiki/A*_search_algorithm
@@ -17,6 +19,7 @@ public class AStarAlgorithmViewModel : BaseViewModel
     #region Algorithem Constructors
 
     public Node[,] NodeMap { get; set; }
+    public WriteableBitmap NodeMapImage { get; set; }
     public List<Node> OpenSet { get; set; } = new();
     public List<Node> CloseSet { get; set; } = new();
     public List<Node> Path { get; set; } = new();
@@ -98,6 +101,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     NodeMap = await CalculateNodesAsync(NodeMap);
                     await ClearSetNodeMapAsync();
                     _IsClearMap = true;
+                    //await SetStartEndPoint();
+                    //NodeMapImage = await DrawNodeMap(X,Y,NodeMap);                
                     PathData = string.Empty;
                     break;
 
@@ -106,6 +111,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     await AddMazeAsync(NodeMap);
                     await ClearSetNodeMapAsync();
                     _IsClearMap = true;
+                    //await SetStartEndPoint();
+                    //NodeMapImage = await DrawNodeMap(X, Y, NodeMap);
                     PathData = string.Empty;
                     break;
 
@@ -113,6 +120,8 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     NodeMap = await CalculateNodesAsync(NodeMap);
                     await AddStreetAsync(NodeMap);
                     _IsClearMap = false;
+                    //await SetStartEndPoint();
+                    //NodeMapImage = await DrawNodeMap(X, Y, NodeMap);
                     PathData = string.Empty;
                     break;
             }
@@ -156,9 +165,11 @@ public class AStarAlgorithmViewModel : BaseViewModel
             NodeMap[StartPointX, StartPointY].IsObstacle = false;
             NodeMap[StartPointX, StartPointY].G = 0;
             NodeMap[StartPointX, StartPointY].F = 0;
+            NodeMap[StartPointX, StartPointY].Condition = ExtraCondition.Road;
 
             NodeMap[EndPointX, EndPointY].Style = _IsClearMap ? AStarSet.EmptyEnd : AStarSet.End;
             NodeMap[EndPointX, EndPointY].IsObstacle = false;
+            NodeMap[EndPointX, EndPointY].Condition = ExtraCondition.Road;
 
             StartNode = NodeMap[StartPointX, StartPointY];
             GoalNode = NodeMap[EndPointX, EndPointY];
@@ -216,31 +227,30 @@ public class AStarAlgorithmViewModel : BaseViewModel
 
         await RunCommandAsync(() => StartIsRunning, async () =>
         {
-            try
+            await ClearNodeNeighbors();
+            await GetNeighborsAsync(NodeMap, IsDiagonalEnabled);
+            await ResetValuesAsync(NodeMap);
+            await SetStartEndPoint();
+            await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
+
+            PathData = "";
+            OpenSet.Clear();
+            CloseSet.Clear();
+            StepTimeSpan = new();
+
+            // The set of discovered nodes that may need to be (re-)expanded.
+            // Initially, only the start node is known.
+            // This is usually implemented as a min-heap or priority queue rather than a hash-set.
+            // openSet:= {start}
+            OpenSet.Add(StartNode);
+            while (OpenSet.Count > 0)
             {
-                await ClearNodeNeighbors();
-                await GetNeighborsAsync(NodeMap, IsDiagonalEnabled);
-                await ResetValuesAsync(NodeMap);
-                await SetStartEndPoint();
-                await Task.WhenAll(ComputeHeuristicCosts(1), ClearNodeMapAsync());
+                token.ThrowIfCancellationRequested();
+                await pause.PauseIfRequestedAsync();
 
-                PathData = "";
-                OpenSet.Clear();
-                CloseSet.Clear();
-                StepTimeSpan = new();
-
-                // The set of discovered nodes that may need to be (re-)expanded.
-                // Initially, only the start node is known.
-                // This is usually implemented as a min-heap or priority queue rather than a hash-set.
-                // openSet:= {start}
-                OpenSet.Add(StartNode);
-                while (OpenSet.Count > 0)
+                Watch = Stopwatch.StartNew();
+                try
                 {
-                    token.ThrowIfCancellationRequested();
-                    await pause.PauseIfRequestedAsync();
-
-                    Watch = new();
-                    Watch.Start();
                     // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
                     // current:= the node in openSet having the lowest fScore[] value
                     switch (AlgorithemType)
@@ -272,51 +282,48 @@ public class AStarAlgorithmViewModel : BaseViewModel
                     // openSet.Remove(current)
                     OpenSet.Remove(Current);
                     // for each neighbor of current
-                    Parallel.ForEach(Current.Neighbors,async neighbor => 
-                    {
-                        if (!CloseSet.Contains(neighbor) && !neighbor.IsObstacle)
-                        {
-                            // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
-                            // tentative_gScore:= gScore[current] + d(current, neighbor)
-                            var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType, IsConditionEnabled);
+                    _ = Parallel.ForEach(Current.Neighbors, async neighbor =>
+                       {
+                           if (!CloseSet.Contains(neighbor) && !neighbor.IsObstacle)
+                           {
+                               // tentative_gScore is the distance from start to the neighbor through current and in this example the distance between current and neighbor is 1
+                               // tentative_gScore:= gScore[current] + d(current, neighbor)
+                               var tentativeGScore = Current.G + await MovementCost(Current, neighbor, IsDiagonalEnabled, DistanceType, IsConditionEnabled);
 
-                            if (tentativeGScore < neighbor.G)
-                            {
-                                // This path to neighbor is better than any previous one. Record it!
-                                neighbor.CameFrom = Current;
-                                neighbor.G = Math.Round(tentativeGScore, 2);
-                                switch (AlgorithemType)
-                                {
-                                    case 0:
-                                        neighbor.F = double.PositiveInfinity;
-                                        break;
+                               if (tentativeGScore < neighbor.G)
+                               {
+                                   // This path to neighbor is better than any previous one. Record it!
+                                   neighbor.CameFrom = Current;
+                                   neighbor.G = Math.Round(tentativeGScore, 2);
+                                   switch (AlgorithemType)
+                                   {
+                                       case 0:
+                                           neighbor.F = double.PositiveInfinity;
+                                           break;
 
-                                    case 1:
-                                        //http://theory.stanford.edu/~amitp/GameProgramming/Variations.html
-                                        //f(p) = g(p) + w * h(p)
-                                        neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2); //*(IsConditionEnabled ? (int)neighbor.Condition : 1)
-                                        break;
-                                }
-                                if (!OpenSet.Contains(neighbor))
-                                {
-                                    OpenSet.Add(neighbor);
-                                }
-                            }
-                        }
-                        await CheckOpenSetCloseSetPathAsync();
-                        await FindPathAsync();
-                    });
-
+                                       case 1:
+                                           //http://theory.stanford.edu/~amitp/GameProgramming/Variations.html
+                                           //f(p) = g(p) + w * h(p)
+                                           neighbor.F = Math.Round(tentativeGScore + neighbor.H, 2); //*(IsConditionEnabled ? (int)neighbor.Condition : 1)
+                                           break;
+                                   }
+                                   if (!OpenSet.Contains(neighbor))
+                                   {
+                                       OpenSet.Add(neighbor);
+                                   }
+                               }
+                           }
+                           await CheckOpenSetCloseSetPathAsync();
+                           await FindPathAsync();
+                       });
+                }
+                finally
+                {
                     Watch.Stop();
                     StepTimeSpan.Add(Watch.ElapsedTicks);
 
                     await Task.Delay(Delay);
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception: {0}", e);
-                throw;
             }
         });
     }
@@ -412,14 +419,62 @@ public class AStarAlgorithmViewModel : BaseViewModel
             {
                 case 0:
                     pathScore.Algorithm = "Dijkstra's Algorithm";
+                    if (IsConditionEnabled)
+                    {
+                        pathScore.Algorithm += " - Conditions";
+                    }
+                    if (IsDiagonalEnabled)
+                    {
+                        pathScore.Algorithm += " - Diagonal";
+                        pathScore.Algorithm += " - Euclidean Distance";
+                        break;
+                    }
+                    if (DistanceType)
+                    {
+                        pathScore.Algorithm += " - Euclidean Distance";
+                        break;
+                    }
+                    pathScore.Algorithm += " - Manhattan Distance";
                     break;
 
                 case 1:
                     pathScore.Algorithm = "A* Algorithm";
+                    if (IsConditionEnabled)
+                    {
+                        pathScore.Algorithm += " - Conditions";
+                    }
+                    if (IsDiagonalEnabled)
+                    {
+                        pathScore.Algorithm += " - Diagonal";
+                        pathScore.Algorithm += " - Euclidean Distance";
+                        break;
+                    }
+                    if (DistanceType)
+                    {
+                        pathScore.Algorithm += " - Euclidean Distance";
+                        break;
+                    }
+                    pathScore.Algorithm += " - Manhattan Distance";
                     break;
 
                 case 2:
                     pathScore.Algorithm = "Best-First Search";
+                    if (IsConditionEnabled)
+                    {
+                        pathScore.Algorithm += " - Conditions";
+                    }
+                    if (IsDiagonalEnabled)
+                    {
+                        pathScore.Algorithm += " - Diagonal";
+                        pathScore.Algorithm += " - Euclidean Distance";
+                        break;
+                    }
+                    if (DistanceType)
+                    {
+                        pathScore.Algorithm += " - Euclidean Distance";
+                        break;
+                    }
+                    pathScore.Algorithm += " - Manhattan Distance";
                     break;
             }
             PathScore.Add(pathScore);
