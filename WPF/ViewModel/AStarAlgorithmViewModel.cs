@@ -8,7 +8,7 @@ using static WPF.MazeManagement;
 using static WPF.StaticValues;
 using static WPF.StreetManagement;
 using static WPF.WeatherCondition;
-using static WPF.NodeMapDrawing;
+//using static WPF.NodeMapDrawing;
 
 namespace WPF.ViewModel;
 //https://en.wikipedia.org/wiki/A*_search_algorithm
