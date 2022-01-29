@@ -74,3 +74,13 @@ A* is using the following equation  F(n) = G(n) + H(n) to determent the best nod
 
 
 Now A* should prioritize moving on roads over cutting through the land “fig. 4,5”.
+
+<p align="center">
+  <img  src="https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/blob/gh-pages/elo4of498q.gif?raw=true" alt="Fig. 4. A* Without Movement Cost">
+</p>
+<h5 align="center">Fig. 4. A* Without Movement Cost</h5>
+
+<p align="center">
+  <img  src="https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/blob/gh-pages/wMIGKd7aFV.gif?raw=true" alt="Fig. 5. A* With Movement Cost">
+</p>
+<h5 align="center">Fig. 5. A* With Movement Cost</h5>
