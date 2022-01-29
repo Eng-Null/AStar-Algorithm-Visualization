@@ -30,8 +30,14 @@ public static class DataTransaction
                 var items = JsonConvert.DeserializeObject<Node[,]>(json);
                 if (items is not null)
                 {
-                    X = items.GetLength(0);
-                    Y = items.GetLength(1);
+                    if (X > items.GetLength(0))
+                    {
+                        X = items.GetLength(0);
+                    }                  
+                    if (Y > items.GetLength(1))
+                    {
+                        Y = items.GetLength(1);
+                    }                 
                 }
                 return items;
             });

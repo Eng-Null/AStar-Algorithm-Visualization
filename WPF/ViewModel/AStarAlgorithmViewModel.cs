@@ -144,7 +144,12 @@ public class AStarAlgorithmViewModel : BaseViewModel
             if (temp is not null)
             {
                 NodeMap = temp;
+                if (NodeMap[0, 0].IsObstacle && NodeMap[0, 0].Style == AStarSet.RiverTL)
+                {
+                    _IsClearMap = false;
+                }                 
                 await GetNodesAsync();
+                PathData = string.Empty;
             }
         });
 
