@@ -7,7 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             TextElement.FontSize="13"
+             TextElement.FontSize="12"
              TextElement.FontWeight="Regular"
              TextElement.Foreground="{DynamicResource MaterialDesignBody}"
              TextOptions.TextFormattingMode="Ideal"
@@ -48,18 +48,36 @@
                        Text="Algorithms Used in This Project" />
             <TextBlock Margin="20,0,0,10"
                        Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                       Text="# Dijkstra's algorithm " />
+            <TextBlock Margin="40,0,0,20"
+                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                       Text="   Dijkstra's algorithm will find the shortest paths between all the nodes in a graph. It was created by computer scientist Edsger W. Dijkstra in 1956 and published three years later. There are many different variations of the algorithm. Dijkstra's original algorithm was made to find the shortest path between two given nodes;  however, there is a variant that produces a shortest-path tree. The variant does this as it fixes a single node and uses this as the source node, and from here, it finds the shortest paths to all the other notes in the said graph."
+                       TextWrapping="WrapWithOverflow"
+                       FontSize="14" />
+            <TextBlock Margin="20,0,0,10"
+                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                       Text="# Best-First Search" />
+            <TextBlock Margin="40,0,0,20"
+                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                       Text="   Best-First Search is search algorithms that explore the graph by expanding the most promising node chosen according to a specified rule. As Judea Pearl described the BFS as estimating the node n by a heuristic evaluation function F(n) which, in general, may depend on the description of n, the description of the goal, the information gathered by the search up to that point, and most importantly, on any extra knowledge about the problem domain. The figure below shows that Best-First Search finds the goal fast but is not the shortest or most optimal."
+                       TextWrapping="WrapWithOverflow"
+                       FontSize="14" />
+            <TextBlock Margin="20,0,0,10"
+                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
                        Text="# A* search algorithm" />
             <TextBlock Margin="40,0,0,20"
                        Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                        Text="   A star is a graph traversal and path search algorithm, which is often used in many fields of computer science due to its completeness, optimality, and optimal efficiency. One major practical drawback is its space complexity, as it stores all generated nodes in memory. Thus, in practical travel-routing systems, it is generally outperformed by algorithms which can pre-process the graph to attain better performance, as well as memory-bounded approaches; however, A* is still the best solution in many cases."
-                       TextWrapping="WrapWithOverflow" />
+                       TextWrapping="WrapWithOverflow"
+                       FontSize="14" />
             <TextBlock Margin="20,0,0,10"
                        Style="{StaticResource MaterialDesignHeadline5TextBlock}"
                        Text="# Recursive Division algorithm " />
             <TextBlock Margin="40,0,0,10"
                        Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                        Text="   Mazes can be created with recursive division, an algorithm which works as follows: Begin with the maze's space with no walls. Call this a chamber. Divide the chamber with a randomly positioned wall (or multiple walls) where each wall contains a randomly positioned passage opening within it. Then recursively repeat the process on the subchambers until all chambers are minimum sized. This method results in mazes with long straight walls crossing their space, making it easier to see which areas to avoid."
-                       TextWrapping="WrapWithOverflow" />
+                       TextWrapping="WrapWithOverflow"
+                       FontSize="14" />
         </StackPanel>
     </Grid>
 </UserControl>
