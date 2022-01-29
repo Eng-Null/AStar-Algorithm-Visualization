@@ -3,4 +3,5 @@ title: Path Planning Using A-star Algorithm
 show_downloads: true
 github:
   zip_url: https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/releases/download/v0.5.0/net6.0-AStar.Algorithm.Visualization.rar
+  tar_url: https://github.com/Eng-RedWolf/AStar-Algorithm-Visualization/archive/refs/tags/v0.5.0.tar.gz
 description: Small Project For Altinbus University Midterm Project ECE525 by Hussien Hayder Mohammed Al-Kafaji
