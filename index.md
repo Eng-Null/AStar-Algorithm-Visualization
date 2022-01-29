@@ -1,5 +1,3 @@
-# Path Planning Using A-star Algorithm
-
 #### Abstract — One of the most significant challenges in designing realistic Artificial Intelligence (AI) in computer games is that we usually want to find routes from one place to another. We are not just trying to find the shortest path; we also want to consider travel costs. We can use a graph search algorithm to find this path, which works when the map is represented as a graph. A * is a famous graph search option. Dijkstra’s algorithm is the most straightforward graph search algorithm, so let us start there, and we will work our way up to A*.
 
 ### I.	INTRODUCTION
