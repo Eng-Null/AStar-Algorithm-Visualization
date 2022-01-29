@@ -5,7 +5,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>download.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -121,7 +121,6 @@
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />
-    <PackageReference Include="MdXaml" Version="1.12.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1072.54" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />

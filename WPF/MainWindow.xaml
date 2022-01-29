@@ -5,7 +5,6 @@
         xmlns:local="clr-namespace:WPF"
         xmlns:mD="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
         xmlns:view="clr-namespace:WPF.View"
         xmlns:viewModel="clr-namespace:WPF.ViewModel"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
